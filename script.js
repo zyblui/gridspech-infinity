@@ -1,4 +1,5 @@
 const BOARD_HEIGHT = 70;
+let boardSize = 4;
 function generateBoard(size, value) {
     let arr = [], tempArr = [];
     for (let i = 0; i < size; i++) tempArr.push(value);
@@ -313,17 +314,17 @@ function renderBoard(board, ends, numbers, given) {
             &.end::before {
                 border-width: min(${BOARD_HEIGHT / board.length / 6 * 2 / 3}vh, ${90 / board.length / 6 * 2 / 3}vw);
             }
-            &.given::after {
+            &.given::after, &.locked::after {
                 width: min(${BOARD_HEIGHT / board.length / 6}vh, ${90 / board.length / 6}vw);
                 height: min(${BOARD_HEIGHT / board.length / 6}vh, ${90 / board.length / 6}vw);
             }
         }`
     );
 }
-let boardSize = 4;
 let answerBoard = generateAnswer(boardSize);
 let puzzle = generatePuzzle(answerBoard.board, answerBoard.ends);
 let userAnswer = structuredClone(puzzle.given);
+let lockedGrids = generateBoard(boardSize, false);
 for (let i = 0; i < userAnswer.length; i++) for (let j = 0; j < userAnswer.length; j++) {
     if (userAnswer[i][j] == -1) userAnswer[i][j] = 0;
 }
@@ -337,7 +338,9 @@ for (let i of document.getElementById("board").childNodes) {
         if (e.button == 0) {
             paint(i, true);
         } else if (e.button == 2) {
-
+            lockedGrids[Number(i.dataset.x)][Number(i.dataset.y)] = !lockedGrids[Number(i.dataset.x)][Number(i.dataset.y)];
+            if (lockedGrids[Number(i.dataset.x)][Number(i.dataset.y)]) i.classList.add("locked");
+            else i.classList.remove("locked");
         }
     });
     i.addEventListener("mouseenter", function () {
@@ -357,6 +360,7 @@ document.querySelector("body").addEventListener("mouseleave", function () {
     downButton = -1;
 });
 function paint(element, isMouseDown) {
+    if (lockedGrids[Number(element.dataset.x)][Number(element.dataset.y)]) return;
     if (userAnswer[Number(element.dataset.x)][Number(element.dataset.y)] == 1 && (isMouseDown || paintColor == 0)) {
         userAnswer[Number(element.dataset.x)][Number(element.dataset.y)] = 0;
         paintColor = 0;

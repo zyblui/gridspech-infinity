@@ -28,7 +28,8 @@
                 border-color: white;
             }
 
-            &.given::after {
+            &.given::after,
+            &.locked::after {
                 background-color: white;
             }
         }
@@ -54,6 +55,16 @@
             content: "";
             background-color: black;
             clip-path: shape(from 0 0, line to 100% 100%, line to 0 100%, close);
+            display: block;
+            position: absolute;
+            bottom: 10%;
+            left: 10%;
+        }
+
+        &.locked::after {
+            content: "";
+            background-color: black;
+            clip-path: shape(evenodd from 0 0, line to 100% 100%, line to 0 100%, close, move to 20% 45%, line to 20% 80%, line to 55% 80%, close);
             display: block;
             position: absolute;
             bottom: 10%;
