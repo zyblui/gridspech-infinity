@@ -476,7 +476,7 @@ function getNumber(board, coord) {
             counterMin++;
             counterMax++;
         } else if (board[coord.x + dir.x][coord.y + dir.y] == -1) {
-            counterMin++;
+            counterMax++;
         }
     }
     return {
@@ -508,8 +508,9 @@ function solve(ends, numbers) {
         break;
     }
     let endIndex1 = 0;
-    outerFor: for (; endIndex1 < endsList.length; endIndex1++) {
-        for (let usedEnd of []) if ((usedEnd.x == endsList[endIndex1].x && usedEnd.y == endsList[endIndex1].y) || endIndex1 == endIndex2) continue outerFor;
+    outerFor3: for (; endIndex1 < endsList.length; endIndex1++) {
+        if (endIndex1 == endIndex2) continue outerFor3;
+        for (let usedEnd of []) if ((usedEnd.x == endsList[endIndex1].x && usedEnd.y == endsList[endIndex1].y)) continue outerFor3;
 
         let board = generateBoard(ends.length, -1);
         board[endsList[endIndex2].x][endsList[endIndex2].y] = 1;
@@ -574,8 +575,9 @@ function iterateSolution(tempSolutions, endsList, ends) {
             break;
         }
         let endIndex1 = 0;
-        outerFor: for (; endIndex1 < endsList.length; endIndex1++) {
-            for (let usedEnd of tempSolution.usedEnds) if ((usedEnd.x == endsList[endIndex1].x && usedEnd.y == endsList[endIndex1].y) || endIndex1 == endIndex2) continue outerFor;
+        outerFor3: for (; endIndex1 < endsList.length; endIndex1++) {
+            if (endIndex1 == endIndex2) continue outerFor3;
+            for (let usedEnd of tempSolution.usedEnds) if ((usedEnd.x == endsList[endIndex1].x && usedEnd.y == endsList[endIndex1].y)) continue outerFor3;
 
             let board = tempSolution.board;
             let colorList = [];
@@ -584,8 +586,6 @@ function iterateSolution(tempSolutions, endsList, ends) {
             for (let color of colorList) {
                 let tempBoard = structuredClone(board);
                 tempBoard[endsList[endIndex2].x][endsList[endIndex2].y] = color;
-                /*let pathCoords = getRegion(getRegions(board), endsList[endIndex2]);
-                if (!(pathCoords[0].x == endsList[endIndex2.x] && pathCoords[0].y == endsList[endIndex2.y])) pathCoords = reverse(pathCoords);*/
                 branches.push({
                     "endIndex": endIndex1,
                     "board": tempBoard,
