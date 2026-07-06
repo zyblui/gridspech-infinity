@@ -1,0 +1,45 @@
+.line {
+    height: 30px;
+
+    & .grid {
+        width: 30px;
+        height: 30px;
+        display: inline-block;
+        background-color: lightgray;
+        vertical-align: bottom;
+        text-align: center;
+
+        &.black {
+            background-color: black;
+
+            &.end::before {
+                border: solid 5px white;
+            }
+        }
+
+        &.white {
+            background-color: white;
+
+
+        }
+
+        &.end::before {
+            border: solid 5px black;
+        }
+
+        &.end::before {
+            content: "";
+            display: block;
+            width: 20px;
+            height: 20px;
+            border-radius: 30px;
+            position: relative;
+            top: 5px;
+            left: 5px;
+            box-sizing: border-box;
+        }
+    }
+}
+html,body{
+    font-family: Inter,sans-serif;
+}
