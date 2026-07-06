@@ -1,3 +1,4 @@
+const BOARD_HEIGHT = 70;
 function generateBoard(size, value) {
     let arr = [], tempArr = [];
     for (let i = 0; i < size; i++) tempArr.push(value);
@@ -283,11 +284,10 @@ function gridIndexOf(coordGroup, coord) {
 function getRegion(regions, coord) {
     for (let region of regions) for (let grid of region.grids) if (grid.x == coord.x && grid.y == coord.y) return region;
 }
-function renderBoard(board, ends, numbers) {
+let stylesheet = new CSSStyleSheet();
+document.adoptedStyleSheets.push(stylesheet);
+function renderBoard(board, ends, numbers, given) {
     for (let i = 0; i < board.length; i++) {
-        let line = document.createElement("div");
-        line.classList.add("line");
-        document.getElementById("board").appendChild(line);
         for (let j = 0; j < board[i].length; j++) {
             let grid = document.createElement("div");
             grid.classList.add("grid");
@@ -295,14 +295,80 @@ function renderBoard(board, ends, numbers) {
             else if (board[i][j] == 1) grid.classList.add("black");
             if (ends[i][j]) grid.classList.add("end");
             if (numbers[i][j] != 0) grid.innerText = numbers[i][j];
-            line.appendChild(grid);
+            grid.dataset.x = i;
+            grid.dataset.y = j;
+            if (given[i][j] != -1) grid.classList.add("given");
+            document.getElementById("board").appendChild(grid);
         }
     }
+
+    document.getElementById("board").dataset.size = board.length;
+    document.getElementById("board").style.gridTemplateColumns = `repeat(${board.length}, 1fr)`;
+    document.getElementById("board").style.gridTemplateRows = `repeat(${board.length}, 1fr)`;
+    document.getElementById("board").style.fontSize = `min(${BOARD_HEIGHT / board.length * 2 / 3}vh, ${90 / board.length * 2 / 3}vw)`;
+    if (stylesheet.cssRules.length) stylesheet.deleteRule(0);
+    stylesheet.insertRule(
+        `#board .grid {
+            line-height: min(${BOARD_HEIGHT / board.length}vh, ${90 / board.length}vw);
+            &.end::before {
+                border-width: min(${BOARD_HEIGHT / board.length / 6 * 2 / 3}vh, ${90 / board.length / 6 * 2 / 3}vw);
+            }
+            &.given::after {
+                width: min(${BOARD_HEIGHT / board.length / 6}vh, ${90 / board.length / 6}vw);
+                height: min(${BOARD_HEIGHT / board.length / 6}vh, ${90 / board.length / 6}vw);
+            }
+        }`
+    );
 }
-let answerBoard = generateAnswer(7);
+let boardSize = 4;
+let answerBoard = generateAnswer(boardSize);
 let puzzle = generatePuzzle(answerBoard.board, answerBoard.ends);
+let userAnswer = structuredClone(puzzle.given);
+for (let i = 0; i < userAnswer.length; i++) for (let j = 0; j < userAnswer.length; j++) {
+    if (userAnswer[i][j] == -1) userAnswer[i][j] = 0;
+}
 console.log("numbers", puzzle.numbers);
-renderBoard(puzzle.given, answerBoard.ends, puzzle.numbers);
+renderBoard(userAnswer, answerBoard.ends, puzzle.numbers, puzzle.given);
+let downButton = -1, paintColor = -1;
+for (let i of document.getElementById("board").childNodes) {
+    i.addEventListener("mousedown", function (e) {
+        if (puzzle.given[Number(i.dataset.x)][Number(i.dataset.y)] != -1) return;
+        downButton = e.button;
+        if (e.button == 0) {
+            paint(i, true);
+        } else if (e.button == 2) {
+
+        }
+    });
+    i.addEventListener("mouseenter", function () {
+        if (puzzle.given[Number(i.dataset.x)][Number(i.dataset.y)] != -1) return;
+        if (downButton == 0) {
+            paint(i, false);
+        }
+    });
+    i.oncontextmenu = (e) => {
+        e.preventDefault();
+    };
+}
+document.querySelector("body").addEventListener("mouseup", function () {
+    downButton = -1;
+});
+document.querySelector("body").addEventListener("mouseleave", function () {
+    downButton = -1;
+});
+function paint(element, isMouseDown) {
+    if (userAnswer[Number(element.dataset.x)][Number(element.dataset.y)] == 1 && (isMouseDown || paintColor == 0)) {
+        userAnswer[Number(element.dataset.x)][Number(element.dataset.y)] = 0;
+        paintColor = 0;
+        element.classList.remove("black");
+        element.classList.add("white");
+    } else if (userAnswer[Number(element.dataset.x)][Number(element.dataset.y)] == 0 && (isMouseDown || paintColor == 1)) {
+        userAnswer[Number(element.dataset.x)][Number(element.dataset.y)] = 1;
+        paintColor = 1;
+        element.classList.remove("white");
+        element.classList.add("black");
+    }
+}
 function generatePuzzle(answer, ends) {
     let puzzleNumber = generateBoard(answer.length, 0);
     let given = generateBoard(answer.length, -1);
@@ -336,7 +402,7 @@ function generatePuzzle(answer, ends) {
                     "x": i,
                     "y": j
                 });
-                if (number.counterMin <= answerNumber[i][j] && answerNumber[i][j] <= number.counterMax) sameToAnswer[i][j]++;// += number.multiplier;
+                if (number.counterMin <= answerNumber[i][j] && answerNumber[i][j] <= number.counterMax) sameToAnswer[i][j]++;
             }
         }
         let hits = [];
@@ -349,7 +415,7 @@ function generatePuzzle(answer, ends) {
             while (tempSolutions.length > 1) {
                 for (let solution of tempSolutions) {
                     for (let i = 0; i < solution.length; i++) for (let j = 0; j < solution.length; j++) {
-                        if (solution[i][j] == -1 || solution[i][j] == answer[i][j]) sameToAnswer[i][j]++;// += number.multiplier;
+                        if (solution[i][j] == -1 || solution[i][j] == answer[i][j]) sameToAnswer[i][j]++;
                     }
                 }
                 minHits = Math.min(...sameToAnswer.flat(2));
@@ -395,8 +461,8 @@ function generatePuzzle(answer, ends) {
         }
         console.log(tempSolutions);
     }
-    console.log(tempSolutions)
-    console.log("given",given)
+    console.log(tempSolutions);
+    console.log("given", given);
     return {
         "given": given,
         "numbers": puzzleNumber
@@ -413,11 +479,9 @@ function getNumber(board, coord) {
             counterMin++;
         }
     }
-    //for (let i of board) for (let j of i) if (j == -1) power++;
     return {
         "counterMin": counterMin,
-        "counterMax": counterMax//,
-        //"multiplier": 2 ** (power - ((board[coord.x][coord.y] == -1) ? 1 : 0))
+        "counterMax": counterMax
     };
 }
 function solve(ends, numbers) {

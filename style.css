@@ -1,45 +1,86 @@
-.line {
-    height: 30px;
+#board {
+    height: min(70vh, 90vw);
+    width: min(70vh, 90vw);
+    display: grid;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+    box-shadow: 0 0 9vmin rgba(0, 0, 0, 0.3);
 
     & .grid {
-        width: 30px;
-        height: 30px;
+        transition: 0.1s;
         display: inline-block;
         background-color: lightgray;
         vertical-align: bottom;
         text-align: center;
+        font-weight: bold;
+        user-select: none;
+        position: relative;
 
         &.black {
             background-color: black;
+            color: white;
 
             &.end::before {
-                border: solid 5px white;
+                border-color: white;
+            }
+
+            &.given::after {
+                background-color: white;
             }
         }
 
         &.white {
             background-color: white;
-
-
         }
 
         &.end::before {
-            border: solid 5px black;
-        }
-
-        &.end::before {
+            border: solid black;
             content: "";
             display: block;
-            width: 20px;
-            height: 20px;
-            border-radius: 30px;
+            width: 67%;
+            height: 67%;
+            border-radius: 50%;
             position: relative;
-            top: 5px;
-            left: 5px;
+            top: calc(100% / 6);
+            left: calc(100% / 6);
             box-sizing: border-box;
+        }
+
+        &.given::after {
+            content: "";
+            background-color: black;
+            clip-path: shape(from 0 0, line to 100% 100%, line to 0 100%, close);
+            display: block;
+            position: absolute;
+            bottom: 10%;
+            left: 10%;
         }
     }
 }
-html,body{
-    font-family: Inter,sans-serif;
+
+html,
+body {
+    font-family: Inter, sans-serif;
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 9fr;
+}
+
+#boardContainer {
+    position: relative;
+    margin-bottom: 15vh;
+}
+
+h2 {
+    text-align: center;
+    font-size: xx-large;
 }
