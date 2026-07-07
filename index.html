@@ -9,12 +9,71 @@
 </head>
 
 <body>
-    <div>
-        <h2>Fairy Easy</h2>
+    <div class="container active" data-id="menu">
+        <div class="top">
+            <h2>Gridspech-infinity</h2>
+        </div>
+        <div class="content">
+            <div class="content-inner">
+                <div class="option" data-for="how to play">How to Play</div>
+                <div class="option" data-for="free play">Free Play</div>
+                <div class="option" data-for="today's puzzles">Today's Puzzles</div>
+                <div class="option" data-for="settings">Settings</div>
+                <div class="option" data-for="about">About</div>
+            </div>
+        </div>
     </div>
-    <div id="boardContainer">
-        <div id="board"></div>
-
+    <div class="container" data-id="free play">
+        <div class="top">
+            <h2>Free Play</h2>
+        </div>
+        <div class="content">
+            <div class="content-inner">
+                <h3>Standard</h3>
+                <div class="option" data-for="game">Easy</div>
+                <div class="option" data-for="game">Medium</div>
+                <div class="option" data-for="game">Hard</div>
+                <div class="option" data-for="game">Extreme</div>
+                <div class="option" data-for="game">Hell</div>
+                <h3>Fairy</h3>
+                <div class="option" data-for="game">Fairy Easy</div>
+                <div class="option" data-for="game">Fairy Medium</div>
+                <div class="option" data-for="game">Fairy Hard</div>
+                <div class="option" data-for="game">Fairy Extreme</div>
+                <div class="option" data-for="game">Fairy Hell</div>
+            </div>
+        </div>
+    </div>
+    <div class="container" data-id="today's puzzles">
+        <div class="top">
+            <h2>Today's Puzzles</h2>
+        </div>
+        <div class="content">
+            <div class="content-inner">
+                <h3>Standard</h3>
+                <div class="option" data-for="game">Easy</div>
+                <div class="option" data-for="game">Medium</div>
+                <div class="option" data-for="game">Hard</div>
+                <div class="option" data-for="game">Extreme</div>
+                <div class="option" data-for="game">Hell</div>
+                <h3>Fairy</h3>
+                <div class="option" data-for="game">Fairy Easy</div>
+                <div class="option" data-for="game">Fairy Medium</div>
+                <div class="option" data-for="game">Fairy Hard</div>
+                <div class="option" data-for="game">Fairy Extreme</div>
+                <div class="option" data-for="game">Fairy Hell</div>
+            </div>
+        </div>
+    </div>
+    <div id="game" class="container" data-id="game">
+        <div class="top">
+            <h2>Fairy Easy</h2>
+        </div>
+        <div id="boardContainer" class="content">
+            <div class="content-inner">
+                <div id="board"></div>
+            </div>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>

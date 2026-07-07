@@ -684,3 +684,9 @@ function exploreFuturePaths({
     }
 
 }
+for (let i of document.querySelectorAll("[data-for]")) {
+    i.addEventListener("click", function () {
+        document.querySelector(".active").classList.remove("active");
+        document.querySelector(`[data-id="${i.dataset.for}"]`).classList.add("active");
+    });
+}
