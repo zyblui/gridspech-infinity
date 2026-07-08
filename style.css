@@ -1,3 +1,129 @@
+:root {
+    --text-color: #666;
+    --shade: rgba(0, 0, 0, 0.06);
+    --border: hsl(0, 0%, 93%);
+    --border-hover: #e6e6e6;
+    --button-bg-hover:rgba(0,0,0,0.05)
+}
+
+body {
+    &.white {
+        --tile0-bg: hsl(0, 0%, 95%);
+        --tile0-border: hsl(0, 0%, 87%);
+        --tile0-symbol: #444;
+        --tile1-bg: hsl(0, 0%, 20%);
+        --tile1-border: hsl(0, 0%, 29%);
+        --tile1-symbol: hsl(0, 0%, 95%);
+        --tile2-bg: hsl(220, 100%, 63%);
+        --tile2-border: hsl(220, 100%, 70%);
+        --tile2-symbol: hsl(220, 100%, 90%);
+        --bg:radial-gradient(circle closest-corner, #fff 50%, #f9f9f9);
+    }
+
+    &.peach {
+        --text-color: white;
+        --tile0-bg: #ffada1;
+        --tile0-border: #ffc9c3;
+        --tile0-symbol: #bb0072;
+        --tile1-bg: rgb(57, 71, 89);
+        --tile1-border: rgb(46, 53, 66);
+        --tile1-symbol: #ffc9c3;
+        --shade: hsla(342, 61%, 41%, .07);
+        --bg:linear-gradient(0deg, #f09e6f, #ee6570);
+    }
+
+    &.beige {
+        --text-color: #f2ede2;
+        --tile0-bg: #cecdbd;
+        --tile0-border: #f2ede2;
+        --tile0-symbol: hsl(208, 16%, 25%);
+        --tile1-bg: rgb(76, 96, 108);
+        --tile1-border: hsl(208, 16%, 25%);
+        --tile1-symbol: #f2ede2;
+        --bg:radial-gradient(circle farthest-corner, #d0bfa8 50%, #9e8f79);
+    }
+
+    &.soft {
+        --text-color: rgb(0, 0, 0);
+        --tile0-bg: hsl(265, 36%, 80%);
+        --tile0-border: hsl(265, 36%, 87%);
+        --tile0-symbol: hsl(265, 40%, 24%);
+        --tile1-bg: hsl(345 50% 28%);
+        --tile1-border: hsl(345 76% 18%);
+        --tile1-symbol: hsl(345deg 56% 85%);
+        --shade: hsla(290, 80%, 26%, .1);
+        --bg:linear-gradient(to top, #dad4ec, #f0e0ee 30%, #f3ebe7);
+    }
+
+    &.blorange {
+        --text-color: rgb(140, 175, 240);
+        --tile0-bg: hsl(222, 94%, 25%);
+        --tile0-border: hsl(218, 100%, 30%);
+        --tile0-symbol: rgb(140, 175, 240);
+        --tile1-bg: rgb(255, 110, 0);
+        --tile1-border: rgb(225, 73, 0);
+        --tile1-symbol: rgb(255, 198, 137);
+        --button-bg-hover: rgba(255, 255, 255, .1);
+        --button-bg-active: rgba(255, 255, 255, .2);
+        --bg:linear-gradient(80deg, #132e6c, #061a56);
+    }
+
+    &.blackellow {
+        --text-color: hsl(5, 12%, 60%);
+        --tile0-bg: hsl(6, 16%, 14%);
+        --tile0-border: hsl(6, 10%, 28%);
+        --tile0-symbol: hsl(42, 100%, 45%);
+        --tile1-bg: rgb(255, 198, 68);
+        --tile1-border: hsl(42, 100%, 45%);
+        --tile1-symbol: hsl(6, 16%, 14%);
+        --button-bg-hover: rgba(255, 255, 255, .1);
+        --button-bg-active: rgba(255, 255, 255, .2);
+        --shade: rgba(27, 11, 16, .3);
+        --bg:linear-gradient(0deg, #211818, #3e2e2d);
+    }
+
+    &.lemon {
+        --text-color: hsl(54, 55%, 29%);
+        --tile0-bg: hsl(60, 80%, 85%);
+        --tile0-border: hsl(60, 54%, 65%);
+        --tile0-symbol: hsl(60, 60%, 30%);
+        --tile1-bg: hsl(315, 50%, 45%);
+        --tile1-border: hsl(300, 50%, 35%);
+        --tile1-symbol: hsl(288, 70%, 80%);
+        --shade: #9a80003d;
+        --bg:linear-gradient(180deg, #ffc 20%, #ff9);
+    }
+
+    &.sky {
+        --text-color: rgb(255, 254, 249);
+        --tile0-bg: hsl(202, 84%, 50%);
+        --tile0-border: #71caff;
+        --tile0-symbol: rgb(255, 254, 249);
+        --tile1-bg: rgb(255, 254, 249);
+        --tile1-border: rgb(232, 229, 222);
+        --tile1-symbol: #0090e6;
+        --shade: hsla(205deg, 100%, 40%, .2);
+        --bg:linear-gradient(180deg, #0091e6, #70cbff);
+    }
+
+    &.cosmic {
+        --text-color: rgb(132, 134, 223);
+        --tile0-bg: hsl(239, 55%, 30%);
+        --tile0-border: hsl(239, 33%, 45%);
+        --tile0-symbol: hsl(239, 59%, 70%);
+        --tile1-bg: rgb(0, 255, 195);
+        --tile1-border: rgb(0, 181, 181);
+        --tile1-symbol: hsl(239, 55%, 30%);
+        --tile2-bg: rgb(255, 0, 167);
+        --tile2-border: rgb(198, 0, 149);
+        --tile2-symbol: hsl(239, 55%, 30%);
+        --button-bg-hover: rgba(255, 255, 255, .05);
+        --button-bg-active: rgba(255, 255, 255, .1);
+        --shade: hsl(239, 60%, 29%);
+        --bg:linear-gradient(0deg, #25256f, #382a7e);
+    }
+}
+
 #board {
     height: min(70vh, 90vw);
     width: min(70vh, 90vw);
@@ -8,7 +134,7 @@
     left: 0;
     right: 0;
     margin: auto;
-    box-shadow: 0 0 9vmin rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 9vmin var(--shade);
 
     & .grid {
         transition: 0.1s;
@@ -19,27 +145,28 @@
         font-weight: bold;
         user-select: none;
         position: relative;
+        color: var(--tile0-symbol);
 
         &.black {
-            background-color: black;
-            color: white;
+            background-color: var(--tile1-bg);
+            color: var(--tile1-symbol);
 
             &.end::before {
-                border-color: white;
+                border-color: var(--tile1-symbol);
             }
 
             &.given::after,
             &.locked::after {
-                background-color: white;
+                background-color: var(--tile1-symbol);
             }
         }
 
         &.white {
-            background-color: white;
+            background-color: var(--tile0-bg);
         }
 
         &.end::before {
-            border: solid black;
+            border: solid var(--tile0-symbol);
             content: "";
             display: block;
             width: 67%;
@@ -53,7 +180,7 @@
 
         &.given::after {
             content: "";
-            background-color: black;
+            background-color: var(--tile0-symbol);
             clip-path: shape(from 0 0, line to 100% 100%, line to 0 100%, close);
             display: block;
             position: absolute;
@@ -63,7 +190,7 @@
 
         &.locked::after {
             content: "";
-            background-color: black;
+            background-color: var(--tile0-symbol);
             clip-path: shape(evenodd from 0 0, line to 100% 100%, line to 0 100%, close, move to 20% 45%, line to 20% 80%, line to 55% 80%, close);
             display: block;
             position: absolute;
@@ -75,11 +202,13 @@
 
 html,
 body {
-    font-family: Inter, sans-serif;
+    font-family: "Lexend Deca", sans-serif;
     height: 100%;
     margin: 0;
     -webkit-user-select: none;
     user-select: none;
+    background-image: var(--bg);
+    color: var(--text-color)
 }
 
 .container {
@@ -101,19 +230,16 @@ h2 {
 }
 
 .option {
-    border: solid 3px lightgray;
-    box-shadow: 0 0 9vmin rgba(0, 0, 0, 0.1);
-    background-color: white;
+    border: solid 3px var(--border);
+    box-shadow: 0 0 9vmin var(--shade);
+    background-color: none;
     padding: 3vh;
     margin-bottom: 3vh;
-    font-weight: bold;
     font-size: x-large;
     transition: 0.1s;
-
     &:hover {
-        background-color: black;
-        color: white;
-        border-color: gray;
+        background-color: var(--button-bg-hover);
+        border-color: var(--border-hover);
     }
 }
 
@@ -139,26 +265,44 @@ h2 {
     left: 0;
 }
 
-#backButton {
+.back-button {
     position: absolute;
-    left:2vh;
-    top:2vh;
-    width:6vh;
+    left: 2vh;
+    top: 2vh;
+    width: 6vh;
     height: 6vh;
     background-color: transparent;
     border: none;
-    padding:0;
+    padding: 0;
     border-radius: 50%;
+
     &::before {
         display: inline-block;
         content: "";
-        background-color: black;
+        background-color: var(--text-color);
         width: 4vh;
         height: 4vh;
         text-align: center;
         clip-path: shape(from 100% 43%, line to 100% 57%, line to 30% 57%, line to 60% 87%, line to 50% 97%, line to 3% 50%, line to 50% 3%, line to 60% 13%, line to 30% 43%, close);
     }
-    &:hover{
-        background-color: rgba(0, 0, 0, 0.1);
+
+    &:hover {
+        background-color: var(--shade);
     }
+}
+
+@font-face {
+    font-family: "Lexend Deca";
+    src: url("LexendDeca-Regular.ttf");
+    font-weight: 500;
+}
+
+@font-face {
+    font-family: "Lexend Deca";
+    src: url("LexendDeca-Light.ttf");
+    font-weight: 300;
+}
+
+span.dim {
+    opacity: 0.7;
 }

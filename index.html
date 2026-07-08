@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 
-<body>
+<body class="white">
     <div class="container active" data-id="menu">
         <div class="top">
             <h2>Gridspech-infinity</h2>
@@ -25,6 +25,7 @@
     </div>
     <div class="container" data-id="free play">
         <div class="top">
+            <button class="back-button" data-for="menu"></button>
             <h2>Free Play</h2>
         </div>
         <div class="content">
@@ -46,6 +47,7 @@
     </div>
     <div class="container" data-id="today's puzzles">
         <div class="top">
+            <button class="back-button" data-for="menu"></button>
             <h2>Today's Puzzles</h2>
         </div>
         <div class="content">
@@ -67,12 +69,23 @@
     </div>
     <div id="game" class="container" data-id="game">
         <div class="top">
-            <button id="backButton" data-for="free play"></button>
-            <h2>Fairy Easy</h2>
+            <button class="back-button" data-for="free play"></button>
+            <h2 id="gameTitle">Fairy Easy</h2>
         </div>
         <div id="boardContainer" class="content">
             <div class="content-inner">
                 <div id="board"></div>
+            </div>
+        </div>
+    </div>
+    <div class="container" data-id="settings">
+        <div class="top">
+            <button class="back-button" data-for="menu"></button>
+            <h2>Settings</h2>
+        </div>
+        <div class="content">
+            <div class="content-inner">
+                <div class="option" id="theme"><span class="dim">Theme: </span><span class="value">White</span></div>
             </div>
         </div>
     </div>

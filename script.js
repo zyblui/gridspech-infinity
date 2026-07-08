@@ -1,4 +1,15 @@
 const BOARD_HEIGHT = 70;
+const MODE_NAMES = {
+    "standard": "",
+    "fairy": "Fairy "
+};
+const SIZE_NAMES = {
+    4: "Easy",
+    5: "Medium",
+    6: "Hard",
+    7: "Extreme",
+    8: "Hell"
+};
 let boardSize = 4;
 function generateBoard(size, value) {
     let arr = [], tempArr = [];
@@ -409,7 +420,6 @@ function generatePuzzle(answer, ends, mode) {
                     }
                 }
             }
-            console.log(tempSolutions);
         }
     } else {
         let sameToAnswer = generateBoard(answer.length, 0);
@@ -676,6 +686,7 @@ function newGame(mode, size) {
         if (userAnswer[i][j] == -1) userAnswer[i][j] = 0;
     }
     renderBoard(userAnswer, answerBoard.ends, puzzle.numbers, puzzle.given);
+    document.getElementById("gameTitle").innerText = MODE_NAMES[mode] + " " + SIZE_NAMES[size];
 }
 for (let i of document.querySelectorAll(".new-game")) {
     i.addEventListener("mousedown", function () {
@@ -706,3 +717,21 @@ for (let i of document.querySelectorAll(".new-game")) {
         }
     });
 }
+const THEME_LIST = ["white", "peach", "beige", "soft", "blorange", "blackellow", "lemon", "sky", "cosmic"];
+const THEME_NAMES = {
+    "white": "White",
+    "peach": "Peach",
+    "beige": "Beige",
+    "soft": "Soft",
+    "blorange": "Blorange",
+    "blackellow": "Blackellow",
+    "lemon": "Lemon",
+    "sky": "Sky",
+    "cosmic": "Cosmic"
+};
+document.getElementById("theme").addEventListener("mousedown", function () {
+    let newTheme = THEME_LIST[(THEME_LIST.indexOf(document.querySelector("body").classList[0]) + 1) % THEME_LIST.length];
+    document.querySelector("body").classList = [];
+    document.querySelector("body").classList.add(newTheme);
+    document.querySelector("#theme .value").innerText = THEME_NAMES[newTheme];
+});
