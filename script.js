@@ -79,7 +79,7 @@ function generateAnswer(size) {
         for (let i of regions) {
             if (!i.finished && i.isLine) {
                 for (let end of i.ends) {
-                    expandRegion(board, /*ends,*/ end, Infinity);
+                    expandRegion(board, end, Infinity);
                     i.finished = true;
                 }
                 break;
@@ -93,11 +93,6 @@ function generateAnswer(size) {
         hasUnfilledGrids = false;
         for (let i of board) for (let j of i) if (j == -1) {
             hasUnfilledGrids = true;
-            /*let hasUnexpandedLines=false;
-            for (let region of regions){
-                if(region.isLine&&!region.finished)hasUnexpandedLines=true;
-            }
-            if(!hasUnexpandedLines)*/
         }
         if (!hasUnfilledGrids) for (let j of regions) if (j.isLine && j.grids.length > 1) {
             ends[j.ends[0].x][j.ends[0].y] = true;
@@ -114,7 +109,7 @@ function reverse(arr) {
     for (let i of arr) arr2.unshift(i);
     return arr;
 }
-function expandRegion(board, /*ends,*/ startCoord, length) {
+function expandRegion(board, startCoord, length) {
     if (!getRegion(getRegions(board), startCoord).isLine) {
         return;
     }
@@ -288,6 +283,7 @@ function getRegion(regions, coord) {
 let stylesheet = new CSSStyleSheet();
 document.adoptedStyleSheets.push(stylesheet);
 function renderBoard(board, ends, numbers, given) {
+    document.getElementById("board").innerHTML = "";
     for (let i = 0; i < board.length; i++) {
         for (let j = 0; j < board[i].length; j++) {
             let grid = document.createElement("div");
@@ -321,38 +317,8 @@ function renderBoard(board, ends, numbers, given) {
         }`
     );
 }
-let answerBoard = generateAnswer(boardSize);
-let puzzle = generatePuzzle(answerBoard.board, answerBoard.ends);
-let userAnswer = structuredClone(puzzle.given);
-let lockedGrids = generateBoard(boardSize, false);
-for (let i = 0; i < userAnswer.length; i++) for (let j = 0; j < userAnswer.length; j++) {
-    if (userAnswer[i][j] == -1) userAnswer[i][j] = 0;
-}
-console.log("numbers", puzzle.numbers);
-renderBoard(userAnswer, answerBoard.ends, puzzle.numbers, puzzle.given);
+
 let downButton = -1, paintColor = -1;
-for (let i of document.getElementById("board").childNodes) {
-    i.addEventListener("mousedown", function (e) {
-        if (puzzle.given[Number(i.dataset.x)][Number(i.dataset.y)] != -1) return;
-        downButton = e.button;
-        if (e.button == 0) {
-            paint(i, true);
-        } else if (e.button == 2) {
-            lockedGrids[Number(i.dataset.x)][Number(i.dataset.y)] = !lockedGrids[Number(i.dataset.x)][Number(i.dataset.y)];
-            if (lockedGrids[Number(i.dataset.x)][Number(i.dataset.y)]) i.classList.add("locked");
-            else i.classList.remove("locked");
-        }
-    });
-    i.addEventListener("mouseenter", function () {
-        if (puzzle.given[Number(i.dataset.x)][Number(i.dataset.y)] != -1) return;
-        if (downButton == 0) {
-            paint(i, false);
-        }
-    });
-    i.oncontextmenu = (e) => {
-        e.preventDefault();
-    };
-}
 document.querySelector("body").addEventListener("mouseup", function () {
     downButton = -1;
 });
@@ -373,7 +339,7 @@ function paint(element, isMouseDown) {
         element.classList.add("black");
     }
 }
-function generatePuzzle(answer, ends) {
+function generatePuzzle(answer, ends, mode) {
     let puzzleNumber = generateBoard(answer.length, 0);
     let given = generateBoard(answer.length, -1);
     let solutions = solve(answerBoard.ends, puzzleNumber).solutions;
@@ -396,84 +362,95 @@ function generatePuzzle(answer, ends) {
         }).counterMin;
     }
     console.log(tempSolutions);
-    while (tempSolutions.length > 1) {
+    if (mode == "fairy") {
+        while (tempSolutions.length > 1) {
 
-        let sameToAnswer = generateBoard(answer.length, 0);
-        for (let solution of tempSolutions) {
-            for (let i = 0; i < solution.length; i++) for (let j = 0; j < solution.length; j++) {
-                if (ends[i][j] || answerNumber[i][j] == 0 || answerNumber[i][j] == 4) continue;
-                let number = getNumber(solution, {
-                    "x": i,
-                    "y": j
-                });
-                if (number.counterMin <= answerNumber[i][j] && answerNumber[i][j] <= number.counterMax) sameToAnswer[i][j]++;
-            }
-        }
-        let hits = [];
-        for (let i of sameToAnswer) for (let j of i) if (j > 0) hits.push(j);
-
-        let minHits = Math.min(...hits);
-
-        if (minHits == tempSolutions.length) {
-
-            while (tempSolutions.length > 1) {
-                for (let solution of tempSolutions) {
-                    for (let i = 0; i < solution.length; i++) for (let j = 0; j < solution.length; j++) {
-                        if (solution[i][j] == -1 || solution[i][j] == answer[i][j]) sameToAnswer[i][j]++;
-                    }
+            let sameToAnswer = generateBoard(answer.length, 0);
+            for (let solution of tempSolutions) {
+                for (let i = 0; i < solution.length; i++) for (let j = 0; j < solution.length; j++) {
+                    if (ends[i][j] || answerNumber[i][j] == 0 || answerNumber[i][j] == 4) continue;
+                    let number = getNumber(solution, {
+                        "x": i,
+                        "y": j
+                    });
+                    if (number.counterMin <= answerNumber[i][j] && answerNumber[i][j] <= number.counterMax) sameToAnswer[i][j]++;
                 }
-                minHits = Math.min(...sameToAnswer.flat(2));
+            }
+            let hits = [];
+            for (let i of sameToAnswer) for (let j of i) if (j > 0) hits.push(j);
 
-                outerFor2: for (let i = 0; i < sameToAnswer.length; i++) {
-                    for (let j = 0; j < sameToAnswer.length; j++) {
-                        if (sameToAnswer[i][j] == minHits) {
-                            given[i][j] = answer[i][j];
-                            for (let solutionIndex = 0; solutionIndex < tempSolutions.length; solutionIndex++) {
-                                if (!tempSolutions[solutionIndex]) break;
-                                if (tempSolutions[solutionIndex][i][j] != -1 && tempSolutions[solutionIndex][i][j] != answer[i][j]) {
-                                    tempSolutions.splice(solutionIndex, 1);
-                                    solutionIndex--;
-                                }
+            let minHits = Math.min(...hits);
+
+            if (minHits == tempSolutions.length) {
+
+                while (tempSolutions.length > 1) {
+                    addGiven(tempSolutions, answer, sameToAnswer, given);
+                }
+
+                break;
+            }
+
+            outerFor: for (let i = 0; i < sameToAnswer.length; i++) {
+                for (let j = 0; j < sameToAnswer.length; j++) {
+                    if (sameToAnswer[i][j] == minHits) {
+                        puzzleNumber[i][j] = answerNumber[i][j];
+                        for (let solutionIndex = 0; solutionIndex < tempSolutions.length; solutionIndex++) {
+                            if (!tempSolutions[solutionIndex]) break;
+                            let number = getNumber(tempSolutions[solutionIndex], {
+                                "x": i,
+                                "y": j
+                            });
+                            if (number.counterMax < puzzleNumber[i][j] || number.counterMin > puzzleNumber[i][j]) {
+                                tempSolutions.splice(solutionIndex, 1);
+                                solutionIndex--;
                             }
-                            break outerFor2;
                         }
+                        break outerFor;
                     }
                 }
             }
-
-            break;
+            console.log(tempSolutions);
         }
-
-        outerFor: for (let i = 0; i < sameToAnswer.length; i++) {
-            for (let j = 0; j < sameToAnswer.length; j++) {
-                if (sameToAnswer[i][j] == minHits) {
-                    puzzleNumber[i][j] = answerNumber[i][j];
-                    for (let solutionIndex = 0; solutionIndex < tempSolutions.length; solutionIndex++) {
-                        if (!tempSolutions[solutionIndex]) break;
-                        let number = getNumber(tempSolutions[solutionIndex], {
-                            "x": i,
-                            "y": j
-                        });
-                        if (number.counterMax < puzzleNumber[i][j] || number.counterMin > puzzleNumber[i][j]) {
-                            tempSolutions.splice(solutionIndex, 1);
-                            solutionIndex--;
-                        }
-                    }
-                    break outerFor;
-                }
-            }
+    } else {
+        let sameToAnswer = generateBoard(answer.length, 0);
+        while (tempSolutions.length > 1) {
+            addGiven(tempSolutions, answer, sameToAnswer, given);
         }
-        console.log(tempSolutions);
     }
     console.log(tempSolutions);
-    console.log("given", given);
     return {
         "given": given,
         "numbers": puzzleNumber
     };
 }
+function addGiven(tempSolutions, answer, sameToAnswer, given) {
+
+    for (let solution of tempSolutions) {
+        for (let i = 0; i < solution.length; i++) for (let j = 0; j < solution.length; j++) {
+            if (solution[i][j] == -1 || solution[i][j] == answer[i][j]) sameToAnswer[i][j]++;
+        }
+    }
+    minHits = Math.min(...sameToAnswer.flat(2));
+
+    outerFor2: for (let i = 0; i < sameToAnswer.length; i++) {
+        for (let j = 0; j < sameToAnswer.length; j++) {
+            if (sameToAnswer[i][j] == minHits) {
+                given[i][j] = answer[i][j];
+                for (let solutionIndex = 0; solutionIndex < tempSolutions.length; solutionIndex++) {
+                    if (!tempSolutions[solutionIndex]) break;
+                    if (tempSolutions[solutionIndex][i][j] != -1 && tempSolutions[solutionIndex][i][j] != answer[i][j]) {
+                        tempSolutions.splice(solutionIndex, 1);
+                        solutionIndex--;
+                    }
+                }
+                break outerFor2;
+            }
+        }
+    }
+
+}
 function getNumber(board, coord) {
-    let counterMin = 0, counterMax = 0;//, power = 0;
+    let counterMin = 0, counterMax = 0;
     for (let dir of DIRECTIONS) {
         if (coord.x + dir.x < 0 || coord.x + dir.x >= board.length || coord.y + dir.y < 0 || coord.y + dir.y >= board.length) continue;
         else if (board[coord.x + dir.x][coord.y + dir.y] == 1) {
@@ -682,11 +659,50 @@ function exploreFuturePaths({
             }
         }
     }
-
 }
 for (let i of document.querySelectorAll("[data-for]")) {
-    i.addEventListener("click", function () {
+    i.addEventListener("mousedown", function () {
         document.querySelector(".active").classList.remove("active");
         document.querySelector(`[data-id="${i.dataset.for}"]`).classList.add("active");
+    });
+}
+let answerBoard = [], puzzle = [], userAnswer = [], lockedGrids = [];
+function newGame(mode, size) {
+    answerBoard = generateAnswer(size);
+    puzzle = generatePuzzle(answerBoard.board, answerBoard.ends, mode);
+    userAnswer = structuredClone(puzzle.given);
+    lockedGrids = generateBoard(size, false);
+    for (let i = 0; i < userAnswer.length; i++) for (let j = 0; j < userAnswer.length; j++) {
+        if (userAnswer[i][j] == -1) userAnswer[i][j] = 0;
+    }
+    renderBoard(userAnswer, answerBoard.ends, puzzle.numbers, puzzle.given);
+}
+for (let i of document.querySelectorAll(".new-game")) {
+    i.addEventListener("mousedown", function () {
+        console.log(i);
+        newGame(i.dataset.mode, Number(i.dataset.size));
+
+        for (let childNode of document.getElementById("board").childNodes) {
+            childNode.addEventListener("mousedown", function (e) {
+                if (puzzle.given[Number(childNode.dataset.x)][Number(childNode.dataset.y)] != -1) return;
+                downButton = e.button;
+                if (e.button == 0) {
+                    paint(childNode, true);
+                } else if (e.button == 2) {
+                    lockedGrids[Number(childNode.dataset.x)][Number(childNode.dataset.y)] = !lockedGrids[Number(childNode.dataset.x)][Number(childNode.dataset.y)];
+                    if (lockedGrids[Number(childNode.dataset.x)][Number(childNode.dataset.y)]) childNode.classList.add("locked");
+                    else childNode.classList.remove("locked");
+                }
+            });
+            childNode.addEventListener("mouseenter", function () {
+                if (puzzle.given[Number(childNode.dataset.x)][Number(childNode.dataset.y)] != -1) return;
+                if (downButton == 0) {
+                    paint(childNode, false);
+                }
+            });
+            childNode.oncontextmenu = (e) => {
+                e.preventDefault();
+            };
+        }
     });
 }
