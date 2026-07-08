@@ -330,10 +330,10 @@ function renderBoard(board, ends, numbers, given) {
 }
 
 let downButton = -1, paintColor = -1;
-document.querySelector("body").addEventListener("mouseup", function () {
+document.querySelector("body").addEventListener("pointerup", function () {
     downButton = -1;
 });
-document.querySelector("body").addEventListener("mouseleave", function () {
+document.querySelector("body").addEventListener("pointerleave", function () {
     downButton = -1;
 });
 function paint(element, isMouseDown) {
@@ -671,7 +671,7 @@ function exploreFuturePaths({
     }
 }
 for (let i of document.querySelectorAll("[data-for]")) {
-    i.addEventListener("mousedown", function () {
+    i.addEventListener("pointerdown", function () {
         document.querySelector(".active").classList.remove("active");
         document.querySelector(`[data-id="${i.dataset.for}"]`).classList.add("active");
     });
@@ -689,12 +689,12 @@ function newGame(mode, size) {
     document.getElementById("gameTitle").innerText = MODE_NAMES[mode] + " " + SIZE_NAMES[size];
 }
 for (let i of document.querySelectorAll(".new-game")) {
-    i.addEventListener("mousedown", function () {
+    i.addEventListener("pointerdown", function () {
         console.log(i);
         newGame(i.dataset.mode, Number(i.dataset.size));
 
         for (let childNode of document.getElementById("board").childNodes) {
-            childNode.addEventListener("mousedown", function (e) {
+            childNode.addEventListener("pointerdown", function (e) {
                 if (puzzle.given[Number(childNode.dataset.x)][Number(childNode.dataset.y)] != -1) return;
                 downButton = e.button;
                 if (e.button == 0) {
@@ -705,7 +705,7 @@ for (let i of document.querySelectorAll(".new-game")) {
                     else childNode.classList.remove("locked");
                 }
             });
-            childNode.addEventListener("mouseenter", function () {
+            childNode.addEventListener("pointerenter", function () {
                 if (puzzle.given[Number(childNode.dataset.x)][Number(childNode.dataset.y)] != -1) return;
                 if (downButton == 0) {
                     paint(childNode, false);
@@ -729,7 +729,7 @@ const THEME_NAMES = {
     "sky": "Sky",
     "cosmic": "Cosmic"
 };
-document.getElementById("theme").addEventListener("mousedown", function () {
+document.getElementById("theme").addEventListener("pointerdown", function () {
     let newTheme = THEME_LIST[(THEME_LIST.indexOf(document.querySelector("body").classList[0]) + 1) % THEME_LIST.length];
     document.querySelector("body").classList = [];
     document.querySelector("body").classList.add(newTheme);
