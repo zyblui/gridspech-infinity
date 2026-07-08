@@ -3,7 +3,7 @@
     --shade: rgba(0, 0, 0, 0.06);
     --border: hsl(0, 0%, 93%);
     --border-hover: #e6e6e6;
-    --button-bg-hover:rgba(0,0,0,0.05)
+    --button-bg-hover: rgba(0, 0, 0, 0.05)
 }
 
 body {
@@ -17,7 +17,7 @@ body {
         --tile2-bg: hsl(220, 100%, 63%);
         --tile2-border: hsl(220, 100%, 70%);
         --tile2-symbol: hsl(220, 100%, 90%);
-        --bg:radial-gradient(circle closest-corner, #fff 50%, #f9f9f9);
+        --bg: radial-gradient(circle closest-corner, #fff 50%, #f9f9f9);
     }
 
     &.peach {
@@ -29,7 +29,7 @@ body {
         --tile1-border: rgb(46, 53, 66);
         --tile1-symbol: #ffc9c3;
         --shade: hsla(342, 61%, 41%, .07);
-        --bg:linear-gradient(0deg, #f09e6f, #ee6570);
+        --bg: linear-gradient(0deg, #f09e6f, #ee6570);
     }
 
     &.beige {
@@ -40,7 +40,7 @@ body {
         --tile1-bg: rgb(76, 96, 108);
         --tile1-border: hsl(208, 16%, 25%);
         --tile1-symbol: #f2ede2;
-        --bg:radial-gradient(circle farthest-corner, #d0bfa8 50%, #9e8f79);
+        --bg: radial-gradient(circle farthest-corner, #d0bfa8 50%, #9e8f79);
     }
 
     &.soft {
@@ -52,7 +52,7 @@ body {
         --tile1-border: hsl(345 76% 18%);
         --tile1-symbol: hsl(345deg 56% 85%);
         --shade: hsla(290, 80%, 26%, .1);
-        --bg:linear-gradient(to top, #dad4ec, #f0e0ee 30%, #f3ebe7);
+        --bg: linear-gradient(to top, #dad4ec, #f0e0ee 30%, #f3ebe7);
     }
 
     &.blorange {
@@ -65,7 +65,7 @@ body {
         --tile1-symbol: rgb(255, 198, 137);
         --button-bg-hover: rgba(255, 255, 255, .1);
         --button-bg-active: rgba(255, 255, 255, .2);
-        --bg:linear-gradient(80deg, #132e6c, #061a56);
+        --bg: linear-gradient(80deg, #132e6c, #061a56);
     }
 
     &.blackellow {
@@ -79,7 +79,7 @@ body {
         --button-bg-hover: rgba(255, 255, 255, .1);
         --button-bg-active: rgba(255, 255, 255, .2);
         --shade: rgba(27, 11, 16, .3);
-        --bg:linear-gradient(0deg, #211818, #3e2e2d);
+        --bg: linear-gradient(0deg, #211818, #3e2e2d);
     }
 
     &.lemon {
@@ -91,7 +91,7 @@ body {
         --tile1-border: hsl(300, 50%, 35%);
         --tile1-symbol: hsl(288, 70%, 80%);
         --shade: #9a80003d;
-        --bg:linear-gradient(180deg, #ffc 20%, #ff9);
+        --bg: linear-gradient(180deg, #ffc 20%, #ff9);
     }
 
     &.sky {
@@ -103,7 +103,7 @@ body {
         --tile1-border: rgb(232, 229, 222);
         --tile1-symbol: #0090e6;
         --shade: hsla(205deg, 100%, 40%, .2);
-        --bg:linear-gradient(180deg, #0091e6, #70cbff);
+        --bg: linear-gradient(180deg, #0091e6, #70cbff);
     }
 
     &.cosmic {
@@ -120,7 +120,7 @@ body {
         --button-bg-hover: rgba(255, 255, 255, .05);
         --button-bg-active: rgba(255, 255, 255, .1);
         --shade: hsl(239, 60%, 29%);
-        --bg:linear-gradient(0deg, #25256f, #382a7e);
+        --bg: linear-gradient(0deg, #25256f, #382a7e);
     }
 }
 
@@ -235,8 +235,8 @@ h2 {
     background-color: none;
     padding: 3vh;
     margin-bottom: 3vh;
-    font-size: x-large;
     transition: 0.1s;
+
     &:hover {
         background-color: var(--button-bg-hover);
         border-color: var(--border-hover);
@@ -246,6 +246,7 @@ h2 {
 .content {
     position: relative;
     margin: 0 max(calc(50vw - 35vh), 5vw) 15vh max(calc(50vw - 35vh), 5vw);
+    font-size: x-large;
 
     & .content-inner {
         position: absolute;
@@ -305,4 +306,8 @@ h2 {
 
 span.dim {
     opacity: 0.7;
+}
+
+a {
+    color: var(--text-color);
 }
