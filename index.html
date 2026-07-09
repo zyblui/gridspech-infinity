@@ -15,13 +15,14 @@
         </div>
         <div class="content">
             <div class="content-inner">
-                <div class="option" data-for="how to play">How to Play</div>
+                <div class="option" data-for="game" id="howToPlay">How to Play</div>
                 <div class="option" data-for="free play">Free Play</div>
                 <div class="option" data-for="today's puzzles">Today's Puzzles</div>
                 <div class="option" data-for="settings">Settings</div>
                 <div class="option" data-for="about">About</div>
             </div>
         </div>
+        <div class="bottom"></div>
     </div>
     <div class="container" data-id="free play">
         <div class="top">
@@ -31,17 +32,17 @@
         <div class="content">
             <div class="content-inner">
                 <h3>Standard</h3>
-                <div class="option new-game" data-for="game" data-mode="standard" data-size="4">Easy</div>
-                <div class="option new-game" data-for="game" data-mode="standard" data-size="5">Medium</div>
-                <div class="option new-game" data-for="game" data-mode="standard" data-size="6">Hard</div>
-                <div class="option new-game" data-for="game" data-mode="standard" data-size="7">Extreme</div>
-                <div class="option new-game" data-for="game" data-mode="standard" data-size="8">Hell</div>
+                <div class="option new-game" data-for="game" data-mode="standard" data-size="4" data-is-todays-puzzle="0">Easy</div>
+                <div class="option new-game" data-for="game" data-mode="standard" data-size="5" data-is-todays-puzzle="0">Medium</div>
+                <div class="option new-game" data-for="game" data-mode="standard" data-size="6" data-is-todays-puzzle="0">Hard</div>
+                <div class="option new-game" data-for="game" data-mode="standard" data-size="7" data-is-todays-puzzle="0">Extreme</div>
+                <div class="option new-game" data-for="game" data-mode="standard" data-size="8" data-is-todays-puzzle="0">Hell</div>
                 <h3>Fairy</h3>
-                <div class="option new-game" data-for="game" data-mode="fairy" data-size="4">Fairy Easy</div>
-                <div class="option new-game" data-for="game" data-mode="fairy" data-size="5">Fairy Medium</div>
-                <div class="option new-game" data-for="game" data-mode="fairy" data-size="6">Fairy Hard</div>
-                <div class="option new-game" data-for="game" data-mode="fairy" data-size="7">Fairy Extreme</div>
-                <div class="option new-game" data-for="game" data-mode="fairy" data-size="8">Fairy Hell</div>
+                <div class="option new-game" data-for="game" data-mode="fairy" data-size="4" data-is-todays-puzzle="0">Fairy Easy</div>
+                <div class="option new-game" data-for="game" data-mode="fairy" data-size="5" data-is-todays-puzzle="0">Fairy Medium</div>
+                <div class="option new-game" data-for="game" data-mode="fairy" data-size="6" data-is-todays-puzzle="0">Fairy Hard</div>
+                <div class="option new-game" data-for="game" data-mode="fairy" data-size="7" data-is-todays-puzzle="0">Fairy Extreme</div>
+                <div class="option new-game" data-for="game" data-mode="fairy" data-size="8" data-is-todays-puzzle="0">Fairy Hell</div>
             </div>
         </div>
     </div>
@@ -53,28 +54,34 @@
         <div class="content">
             <div class="content-inner">
                 <h3>Standard</h3>
-                <div class="option new-game" data-for="game" data-mode="standard" data-size="4">Easy</div>
-                <div class="option new-game" data-for="game" data-mode="standard" data-size="5">Medium</div>
-                <div class="option new-game" data-for="game" data-mode="standard" data-size="6">Hard</div>
-                <div class="option new-game" data-for="game" data-mode="standard" data-size="7">Extreme</div>
-                <div class="option new-game" data-for="game" data-mode="standard" data-size="8">Hell</div>
+                <div class="option new-game" data-for="game" data-mode="standard" data-size="4" data-is-todays-puzzle="1">Easy</div>
+                <div class="option new-game" data-for="game" data-mode="standard" data-size="5" data-is-todays-puzzle="1">Medium</div>
+                <div class="option new-game" data-for="game" data-mode="standard" data-size="6" data-is-todays-puzzle="1">Hard</div>
+                <div class="option new-game" data-for="game" data-mode="standard" data-size="7" data-is-todays-puzzle="1">Extreme</div>
+                <div class="option new-game" data-for="game" data-mode="standard" data-size="8" data-is-todays-puzzle="1">Hell</div>
                 <h3>Fairy</h3>
-                <div class="option new-game" data-for="game" data-mode="fairy" data-size="4">Fairy Easy</div>
-                <div class="option new-game" data-for="game" data-mode="fairy" data-size="5">Fairy Medium</div>
-                <div class="option new-game" data-for="game" data-mode="fairy" data-size="6">Fairy Hard</div>
-                <div class="option new-game" data-for="game" data-mode="fairy" data-size="7">Fairy Extreme</div>
-                <div class="option new-game" data-for="game" data-mode="fairy" data-size="8">Fairy Hell</div>
+                <div class="option new-game" data-for="game" data-mode="fairy" data-size="4" data-is-todays-puzzle="1">Fairy Easy</div>
+                <div class="option new-game" data-for="game" data-mode="fairy" data-size="5" data-is-todays-puzzle="1">Fairy Medium</div>
+                <div class="option new-game" data-for="game" data-mode="fairy" data-size="6" data-is-todays-puzzle="1">Fairy Hard</div>
+                <div class="option new-game" data-for="game" data-mode="fairy" data-size="7" data-is-todays-puzzle="1">Fairy Extreme</div>
+                <div class="option new-game" data-for="game" data-mode="fairy" data-size="8" data-is-todays-puzzle="1">Fairy Hell</div>
             </div>
         </div>
     </div>
     <div id="game" class="container" data-id="game">
         <div class="top">
-            <button class="back-button" data-for="free play"></button>
+            <button class="back-button" data-for="menu"></button>
             <h2 id="gameTitle">Fairy Easy</h2>
         </div>
         <div id="boardContainer" class="content">
             <div class="content-inner">
                 <div id="board"></div>
+            </div>
+        </div>
+        <div class="bottom">
+            <div class="bottom-inner">
+                <button id="checkButton" class="show"></button>
+                <div id="goodContainer">Good!</div>
             </div>
         </div>
     </div>
@@ -88,6 +95,7 @@
                 <div class="option" id="theme"><span class="dim">Theme: </span><span class="value">White</span></div>
             </div>
         </div>
+        <div class="bottom"></div>
     </div>
     <div class="container" data-id="about">
         <div class="top">
@@ -103,6 +111,7 @@
                 <p><a href="https://zyblui.github.io/anti-reversi">Anti-reversi</a></p>
             </div>
         </div>
+        <div class="bottom"></div>
     </div>
     <script src="script.js"></script>
 </body>

@@ -1,12 +1,17 @@
 :root {
     --text-color: #666;
     --shade: rgba(0, 0, 0, 0.06);
-    --border: hsl(0, 0%, 93%);
-    --border-hover: #e6e6e6;
+    --border:
+        /*hsl(0, 0%, 93%)*/
+        rgba(0, 0, 0, 0.07);
+    --border-hover:
+        /*#e6e6e6*/
+        rgba(0, 0, 0, 0.1);
     --button-bg-hover: rgba(0, 0, 0, 0.05)
 }
 
 body {
+
     &.white {
         --tile0-bg: hsl(0, 0%, 95%);
         --tile0-border: hsl(0, 0%, 87%);
@@ -214,11 +219,16 @@ body {
 .container {
     display: grid;
     grid-template-columns: 1fr;
-    grid-template-rows: 1fr 9fr;
+    grid-template-rows: 10fr 75fr 15fr;
     width: 100%;
     height: 100%;
-    overflow-y: auto;
 
+    &:not([data-id="game"]) {
+        overflow-y: auto;
+    }
+    &[data-id="game"]{
+        overflow: hidden;
+    }
     &:not(.active) {
         display: none;
     }
@@ -245,7 +255,7 @@ h2 {
 
 .content {
     position: relative;
-    margin: 0 max(calc(50vw - 35vh), 5vw) 15vh max(calc(50vw - 35vh), 5vw);
+    margin: 0 max(calc(50vw - 35vh), 5vw) 0 max(calc(50vw - 35vh), 5vw);
     font-size: x-large;
 
     & .content-inner {
@@ -264,6 +274,22 @@ h2 {
     position: sticky;
     top: 0;
     left: 0;
+}
+
+.bottom {
+    text-align: center;
+    font-size: x-large;
+    position: relative;
+
+    & .bottom-inner {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin: auto;
+        height: fit-content;
+    }
 }
 
 .back-button {
@@ -310,4 +336,88 @@ span.dim {
 
 a {
     color: var(--text-color);
+}
+
+#checkButton {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    border-radius: 50%;
+    width: 8vh;
+    height: 8vh;
+    position: relative;
+    cursor: pointer;
+
+    &::before {
+        border: solid 0.5vh var(--text-color);
+        content: "";
+        display: block;
+        width: 67%;
+        height: 67%;
+        border-radius: 50%;
+        position: absolute;
+        top: calc(100% / 6);
+        left: calc(100% / 6);
+        box-sizing: border-box;
+    }
+
+    &::after {
+        background-color: var(--text-color);
+        content: "";
+        display: block;
+        width: 13%;
+        height: 13%;
+        border-radius: 50%;
+        position: absolute;
+        top: 43.5%;
+        left: 43.5%;
+        box-sizing: border-box;
+    }
+
+    &:hover::before {
+        scale: 1.1;
+    }
+
+    &:not(.show) {
+        display: none;
+    }
+}
+
+#goodContainer {
+    font-size: xx-large;
+    position: relative;
+
+    &:not(.show) {
+        display: none;
+    }
+
+    &::before {
+        border: solid 4vh var(--text-color);
+        content: "";
+        width: 20vh;
+        height: 20vh;
+        display: block;
+        border-radius: 50%;
+        animation: expand 0.3s cubic-bezier(0, 0.5, 0.5, 1);
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        margin: auto;
+        opacity: 0;
+    }
+}
+
+@keyframes expand {
+    0% {
+        scale: 0;
+        opacity: 1;
+    }
+
+    100% {
+        scale: 1;
+        opacity: 0;
+    }
 }

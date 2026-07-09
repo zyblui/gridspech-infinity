@@ -10,6 +10,7 @@ const SIZE_NAMES = {
     7: "Extreme",
     8: "Hell"
 };
+const DATE = new Date();
 let boardSize = 4;
 function generateBoard(size, value) {
     let arr = [], tempArr = [];
@@ -40,17 +41,20 @@ function checkGridAvailability(board, coord, pathCoords, ends = [], finishCoord 
     return getRegion(regions, pathCoords[0]).isLine;
 }
 
-function generateAnswer(size) {
+function generateAnswer(size, isTodaysPuzzle) {
+    let randFunc;
+    if (isTodaysPuzzle) randFunc = rand;
+    else randFunc = Math.random;
     let board = generateBoard(size, -1);
     let ends = generateBoard(size, false);
-    let length = Infinity;//Math.floor(Math.random() * size * 2) + 2;
+    let length = Math.floor(randFunc() * (size ** 2));
     let pathCoords = [];
     let coord = {
-        "x": Math.floor(Math.random() * size),
-        "y": Math.floor(Math.random() * size)
+        "x": Math.floor(randFunc() * size),
+        "y": Math.floor(randFunc() * size)
     };
     pathCoords.push(structuredClone(coord));
-    let color = Math.round(Math.random());
+    let color = Math.round(randFunc());
     board[coord.x][coord.y] = color;
     ends[coord.x][coord.y] = true;
     for (let i = 0; i < length; i++) {
@@ -63,7 +67,7 @@ function generateAnswer(size) {
             }, pathCoords)) dirAvailable.push(j);
         }
         if (dirAvailable.length) {
-            let dir = dirAvailable[Math.floor(Math.random() * dirAvailable.length)];
+            let dir = dirAvailable[Math.floor(randFunc() * dirAvailable.length)];
             coord.x = coord.x + dir.x;
             coord.y = coord.y + dir.y;
             pathCoords.push(structuredClone(coord));
@@ -90,7 +94,7 @@ function generateAnswer(size) {
         for (let i of regions) {
             if (!i.finished && i.isLine) {
                 for (let end of i.ends) {
-                    expandRegion(board, end, Infinity);
+                    expandRegion(board, end, Infinity, isTodaysPuzzle);
                     i.finished = true;
                 }
                 break;
@@ -105,11 +109,18 @@ function generateAnswer(size) {
         for (let i of board) for (let j of i) if (j == -1) {
             hasUnfilledGrids = true;
         }
-        if (!hasUnfilledGrids) for (let j of regions) if (j.isLine && j.grids.length > 1) {
-            ends[j.ends[0].x][j.ends[0].y] = true;
-            ends[j.ends[1].x][j.ends[1].y] = true;
+        if (!hasUnfilledGrids) {
+            /*regions.sort(function (a, b) {
+                return b.ends.length * b.grids.length - a.ends.length * a.grids.length;
+            });
+            regions = regions.slice(0, size - 2);*/
+            for (let j of regions) if (j.isLine && j.grids.length > 1) {
+                ends[j.ends[0].x][j.ends[0].y] = true;
+                ends[j.ends[1].x][j.ends[1].y] = true;
+            }
         }
     }
+    console.log("answer", board);
     return {
         "board": board,
         "ends": ends
@@ -120,11 +131,13 @@ function reverse(arr) {
     for (let i of arr) arr2.unshift(i);
     return arr;
 }
-function expandRegion(board, startCoord, length) {
+function expandRegion(board, startCoord, length, isTodaysPuzzle) {
     if (!getRegion(getRegions(board), startCoord).isLine) {
         return;
     }
-
+    let randFunc;
+    if (isTodaysPuzzle) randFunc = rand;
+    else randFunc = Math.random;
     let pathCoords = [];
     let coord = structuredClone(startCoord);
     let regions = getRegions(board);
@@ -157,7 +170,7 @@ function expandRegion(board, startCoord, length) {
             }, pathCoords)) dirAvailable.push(j);
         }
         if (dirAvailable.length) {
-            let dir = dirAvailable[Math.floor(Math.random() * dirAvailable.length)];
+            let dir = dirAvailable[Math.floor(randFunc() * dirAvailable.length)];
             coord.x = coord.x + dir.x;
             coord.y = coord.y + dir.y;
             pathCoords.push(structuredClone(coord));
@@ -372,14 +385,15 @@ function generatePuzzle(answer, ends, mode) {
             "y": j
         }).counterMin;
     }
-    console.log(tempSolutions);
+    console.log(structuredClone(tempSolutions));
     if (mode == "fairy") {
         while (tempSolutions.length > 1) {
 
             let sameToAnswer = generateBoard(answer.length, 0);
             for (let solution of tempSolutions) {
                 for (let i = 0; i < solution.length; i++) for (let j = 0; j < solution.length; j++) {
-                    if (ends[i][j] || answerNumber[i][j] == 0 || answerNumber[i][j] == 4) continue;
+                    if (ends[i][j] || answerNumber[i][j] == 0 ||
+                        answerNumber[i][j] + Number(i == 0 || i == answer.length - 1) + Number(j == 0 || j == answer.length - 1) == 4) continue;
                     let number = getNumber(solution, {
                         "x": i,
                         "y": j
@@ -389,18 +403,13 @@ function generatePuzzle(answer, ends, mode) {
             }
             let hits = [];
             for (let i of sameToAnswer) for (let j of i) if (j > 0) hits.push(j);
-
             let minHits = Math.min(...hits);
-
             if (minHits == tempSolutions.length) {
-
                 while (tempSolutions.length > 1) {
                     addGiven(tempSolutions, answer, sameToAnswer, given);
                 }
-
                 break;
             }
-
             outerFor: for (let i = 0; i < sameToAnswer.length; i++) {
                 for (let j = 0; j < sameToAnswer.length; j++) {
                     if (sameToAnswer[i][j] == minHits) {
@@ -427,7 +436,7 @@ function generatePuzzle(answer, ends, mode) {
             addGiven(tempSolutions, answer, sameToAnswer, given);
         }
     }
-    console.log(tempSolutions);
+    console.log(structuredClone(tempSolutions));
     return {
         "given": given,
         "numbers": puzzleNumber
@@ -499,6 +508,7 @@ function solve(ends, numbers) {
         break;
     }
     let endIndex1 = 0;
+    let time1 = new Date();
     outerFor3: for (; endIndex1 < endsList.length; endIndex1++) {
         if (endIndex1 == endIndex2) continue outerFor3;
         for (let usedEnd of []) if ((usedEnd.x == endsList[endIndex1].x && usedEnd.y == endsList[endIndex1].y)) continue outerFor3;
@@ -514,7 +524,7 @@ function solve(ends, numbers) {
         });
         exploreFuturePaths(branches[branches.length - 1], ends, endsList[endIndex1], solutions);
     }
-
+    //console.log("time",new Date()-time1);
     outerFor2: for (let solutionIndex = 0; solutionIndex < solutions.length; solutionIndex++) {
         if (!solutions[solutionIndex]) break;
         let regions = getRegions(solutions[solutionIndex].board);
@@ -581,7 +591,7 @@ function iterateSolution(tempSolutions, endsList, ends) {
                     "endIndex": endIndex1,
                     "board": tempBoard,
                     "branches": [],
-                    "pathCoords": [endsList[endIndex2]]/*pathCoords*/,
+                    "pathCoords": [endsList[endIndex2]],
                     "usedEnds": tempSolution.usedEnds
                 });
                 exploreFuturePaths(branches[branches.length - 1], ends, endsList[endIndex1], solutions);
@@ -632,7 +642,7 @@ function exploreFuturePaths({
     }
     if (dirAvailable.length) {
 
-        for (let dir of dirAvailable) {
+        outerFor: for (let dir of dirAvailable) {
             coord.x = pathCoords[pathCoords.length - 1].x + dir.x;
             coord.y = pathCoords[pathCoords.length - 1].y + dir.y;
             let tempPathCoords = structuredClone(pathCoords);
@@ -652,6 +662,22 @@ function exploreFuturePaths({
                 "pathCoords": tempPathCoords,
                 "usedEnds": usedEnds
             });
+
+            /*let regions = getRegions(tempBoard);
+            for (let i = 0; i < ends.length; i++) for (let j = 0; j < ends.length; j++) if(ends[i][j]) {
+                let region = getRegion(regions, {
+                    "x": i,
+                    "y": j
+                });
+                if (tempBoard[i][j] != -1 && (!region.isLine
+                    || (
+                        !(region.ends[0].x == i && region.ends[0].y == j)
+                        && !(region.ends[1].x == i && region.ends[1].y == j)
+                    ))) {
+                    continue outerFor;
+                }
+            }*/
+
             if (!(coord.x == finishCoord.x && coord.y == finishCoord.y)) {
                 exploreFuturePaths(branches[branches.length - 1], ends, finishCoord, solutions);
             } else {
@@ -676,9 +702,11 @@ for (let i of document.querySelectorAll("[data-for]")) {
         document.querySelector(`[data-id="${i.dataset.for}"]`).classList.add("active");
     });
 }
-let answerBoard = [], puzzle = [], userAnswer = [], lockedGrids = [];
-function newGame(mode, size) {
-    answerBoard = generateAnswer(size);
+let answerBoard = {}, puzzle = {}, userAnswer = [], lockedGrids = [];
+function newGame(mode, size, isTodaysPuzzle) {
+    document.getElementById("checkButton").classList.add("show");
+    document.getElementById("goodContainer").classList.remove("show");
+    answerBoard = generateAnswer(size, isTodaysPuzzle);
     puzzle = generatePuzzle(answerBoard.board, answerBoard.ends, mode);
     userAnswer = structuredClone(puzzle.given);
     lockedGrids = generateBoard(size, false);
@@ -690,8 +718,7 @@ function newGame(mode, size) {
 }
 for (let i of document.querySelectorAll(".new-game")) {
     i.addEventListener("pointerdown", function () {
-        console.log(i);
-        newGame(i.dataset.mode, Number(i.dataset.size));
+        newGame(i.dataset.mode, Number(i.dataset.size), Boolean(Number(i.dataset.isTodaysPuzzle)));
 
         for (let childNode of document.getElementById("board").childNodes) {
             childNode.addEventListener("pointerdown", function (e) {
@@ -735,3 +762,97 @@ document.getElementById("theme").addEventListener("pointerdown", function () {
     document.querySelector("body").classList.add(newTheme);
     document.querySelector("#theme .value").innerText = THEME_NAMES[newTheme];
 });
+document.getElementById("checkButton").addEventListener("pointerdown", function () {
+    let isCorrect = true;
+    if (hasOShape(userAnswer)) isCorrect = false;
+    else {
+        let regions = getRegions(userAnswer);
+        outerFor: for (let i = 0; i < userAnswer.length; i++) for (let j = 0; j < userAnswer.length; j++) {
+            let region = getRegion(regions, {
+                "x": i,
+                "y": j
+            });
+            if (answerBoard.ends[i][j] && (!region.isLine
+                || (
+                    !(region.ends[0].x == i && region.ends[0].y == j)
+                    && !(region.ends[1].x == i && region.ends[1].y == j)
+                ))) {
+                isCorrect = false;
+                break outerFor;
+            }
+        }
+    }
+    if (isCorrect) {
+        document.getElementById("checkButton").classList.remove("show");
+        document.getElementById("goodContainer").classList.add("show");
+    }
+});
+function hasOShape(board) {
+
+}
+const NUMBERS = [
+    138657838,
+    191607277,
+    824254011,
+    857078627,
+    707504085,
+    711653502,
+    653521121,
+    678820449,
+    530714820,
+    264193238,
+    639608071,
+    892496524,
+    641455028,
+    297870890,
+    465750785,
+    300972793,
+    604543465,
+    590904429,
+    134427868,
+    166836225,
+    224038034,
+    864979861,
+    378210702,
+    532635143,
+    764284153,
+    301031741,
+    707181069,
+    629854427,
+    145859672,
+    912226823,
+    352726075
+];
+function* generateRand() {
+    let a = NUMBERS[DATE.getDate()];
+    let b = NUMBERS[DATE.getMonth()];
+    let c = 123450000 + DATE.getFullYear();
+    let i = 1;
+    while (true) {
+        yield ((a * i + b) % c) / c;
+        i++;
+    }
+}
+function rand() {
+    return generateRand().next().value;
+}
+const TUTORIAL={
+    "board":[
+        [true,true,false,false],
+        [false,false,false,true],
+        [true,false,false,false],
+        [false,false,true,true]
+    ],
+    "numbers":[
+        [0,0,2,0],
+        [0,0,0,0],
+        [0,0,0,0],
+        [0,0,0,0]
+    ],
+    "given":[
+        [-1,-1,-1,0],
+        [-1,-1,-1,-1],
+        [-1,-1,-1,-1],
+        [-1,-1,-1,-1],
+    ]
+}
