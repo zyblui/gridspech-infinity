@@ -47,7 +47,7 @@ function generateAnswer(size, isTodaysPuzzle) {
     else randFunc = Math.random;
     let board = generateBoard(size, -1);
     let ends = generateBoard(size, false);
-    let length = Math.floor(randFunc() * (size ** 2));
+    let length = Math.floor(randFunc() * (size ** 2 - 2)) + 2;
     let pathCoords = [];
     let coord = {
         "x": Math.floor(randFunc() * size),
@@ -56,7 +56,6 @@ function generateAnswer(size, isTodaysPuzzle) {
     pathCoords.push(structuredClone(coord));
     let color = Math.round(randFunc());
     board[coord.x][coord.y] = color;
-    ends[coord.x][coord.y] = true;
     for (let i = 0; i < length; i++) {
         let dirAvailable = [];
         for (let j of DIRECTIONS) {
@@ -364,9 +363,11 @@ function paint(element, isMouseDown) {
     }
 }
 function generatePuzzle(answer, ends, mode) {
+
+    debugger;
     let puzzleNumber = generateBoard(answer.length, 0);
     let given = generateBoard(answer.length, -1);
-    let solutions = solve(answerBoard.ends, puzzleNumber).solutions;
+    let solutions = solve(ends, puzzleNumber).solutions;
 
     let tempSolutions = [];
     for (let solution of solutions) {
@@ -493,7 +494,6 @@ function solve(ends, numbers) {
             "number": numbers[i][j]
         });
     }
-
     let endsList = [], branches = [], solutions = [];
     for (let i = 0; i < ends.length; i++) for (let j = 0; j < ends.length; j++) {
         if (ends[i][j]) endsList.push({
@@ -501,14 +501,12 @@ function solve(ends, numbers) {
             "y": j
         });
     }
-
     let endIndex2 = 0;
     outerFor: for (; ; endIndex2++) {
         for (let usedEnd of []) if (usedEnd.x == endsList[endIndex2].x && usedEnd.y == endsList[endIndex2].y) continue outerFor;
         break;
     }
     let endIndex1 = 0;
-    let time1 = new Date();
     outerFor3: for (; endIndex1 < endsList.length; endIndex1++) {
         if (endIndex1 == endIndex2) continue outerFor3;
         for (let usedEnd of []) if ((usedEnd.x == endsList[endIndex1].x && usedEnd.y == endsList[endIndex1].y)) continue outerFor3;
@@ -524,7 +522,7 @@ function solve(ends, numbers) {
         });
         exploreFuturePaths(branches[branches.length - 1], ends, endsList[endIndex1], solutions);
     }
-    //console.log("time",new Date()-time1);
+
     outerFor2: for (let solutionIndex = 0; solutionIndex < solutions.length; solutionIndex++) {
         if (!solutions[solutionIndex]) break;
         let regions = getRegions(solutions[solutionIndex].board);
@@ -707,6 +705,7 @@ function newGame(mode, size, isTodaysPuzzle) {
     document.getElementById("checkButton").classList.add("show");
     document.getElementById("goodContainer").classList.remove("show");
     answerBoard = generateAnswer(size, isTodaysPuzzle);
+    console.log("generatePuzzle", structuredClone(answerBoard.board), structuredClone(answerBoard.ends), mode);
     puzzle = generatePuzzle(answerBoard.board, answerBoard.ends, mode);
     userAnswer = structuredClone(puzzle.given);
     lockedGrids = generateBoard(size, false);
@@ -836,23 +835,23 @@ function* generateRand() {
 function rand() {
     return generateRand().next().value;
 }
-const TUTORIAL={
-    "board":[
-        [true,true,false,false],
-        [false,false,false,true],
-        [true,false,false,false],
-        [false,false,true,true]
+const TUTORIAL = {
+    "board": [
+        [true, true, false, false],
+        [false, false, false, true],
+        [true, false, false, false],
+        [false, false, true, true]
     ],
-    "numbers":[
-        [0,0,2,0],
-        [0,0,0,0],
-        [0,0,0,0],
-        [0,0,0,0]
+    "numbers": [
+        [0, 0, 2, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0]
     ],
-    "given":[
-        [-1,-1,-1,0],
-        [-1,-1,-1,-1],
-        [-1,-1,-1,-1],
-        [-1,-1,-1,-1],
+    "given": [
+        [-1, -1, -1, 0],
+        [-1, -1, -1, -1],
+        [-1, -1, -1, -1],
+        [-1, -1, -1, -1],
     ]
-}
+};
