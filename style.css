@@ -142,7 +142,7 @@ body {
     box-shadow: 0 0 9vmin var(--shade);
 
     & .grid {
-        transition: 0.1s;
+        transition: background-color 0.1s, color 0.1s, border-color 0.1s;
         display: inline-block;
         background-color: lightgray;
         vertical-align: bottom;
@@ -222,15 +222,28 @@ body {
     grid-template-rows: 10fr 75fr 15fr;
     width: 100%;
     height: 100%;
+    animation: container-show 0.2s ease;
 
     &:not([data-id="game"]) {
         overflow-y: auto;
     }
-    &[data-id="game"]{
+
+    &[data-id="game"] {
         overflow: hidden;
     }
+
     &:not(.active) {
         display: none;
+    }
+}
+
+@keyframes container-show {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
     }
 }
 
@@ -283,12 +296,26 @@ h2 {
 
     & .bottom-inner {
         position: absolute;
-        top: 0;
-        bottom: 0;
+        width: min(70vh, 90vw);
         left: 0;
         right: 0;
-        margin: auto;
-        height: fit-content;
+        margin: 0 auto;
+        height: 100%;
+
+        & .bottom-inner-container {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: auto;
+            height: fit-content;
+
+            .tutorial &#gameBottomInnerContainer {
+                display: grid;
+                grid-template-columns: 1fr 3fr;
+            }
+        }
     }
 }
 
@@ -338,6 +365,17 @@ a {
     color: var(--text-color);
 }
 
+#checkButton,
+#goodContainer {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+    height: fit-content;
+}
+
 #checkButton {
     background-color: transparent;
     border: none;
@@ -345,8 +383,8 @@ a {
     border-radius: 50%;
     width: 8vh;
     height: 8vh;
-    position: relative;
     cursor: pointer;
+
 
     &::before {
         border: solid 0.5vh var(--text-color);
@@ -385,21 +423,19 @@ a {
 
 #goodContainer {
     font-size: xx-large;
-    position: relative;
 
     &:not(.show) {
         display: none;
     }
 
     &::before {
-        border: solid 4vh var(--text-color);
+        border: solid 2vh var(--text-color);
         content: "";
-        width: 20vh;
-        height: 20vh;
+        width: 10vh;
+        height: 10vh;
         display: block;
         border-radius: 50%;
         animation: expand 0.3s cubic-bezier(0, 0.5, 0.5, 1);
-        display: block;
         position: absolute;
         top: 0;
         left: 0;
@@ -417,7 +453,24 @@ a {
     }
 
     100% {
-        scale: 1;
+        scale: 2;
         opacity: 0;
     }
+}
+
+::-webkit-scrollbar {
+    width: 0;
+}
+
+#checkButtonContainer {
+    position: relative;
+}
+
+.highlight {
+    outline: solid 1vh rgba(255, 255, 255, .7);
+    outline-offset: -2vh;
+    z-index: 999;
+}
+#tutorialText:not(.tutorial #tutorialText){
+    display: none;
 }

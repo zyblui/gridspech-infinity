@@ -246,6 +246,7 @@ function getRegions(board) {
     }
     return regions;
 }
+
 function merge(regions, region1Index, region2Index) {
     if (region1Index == region2Index) return;
     let combinedIsLine = false;
@@ -363,8 +364,6 @@ function paint(element, isMouseDown) {
     }
 }
 function generatePuzzle(answer, ends, mode) {
-
-    debugger;
     let puzzleNumber = generateBoard(answer.length, 0);
     let given = generateBoard(answer.length, -1);
     let solutions = solve(ends, puzzleNumber).solutions;
@@ -467,7 +466,6 @@ function addGiven(tempSolutions, answer, sameToAnswer, given) {
             }
         }
     }
-
 }
 function getNumber(board, coord) {
     let counterMin = 0, counterMax = 0;
@@ -702,6 +700,8 @@ for (let i of document.querySelectorAll("[data-for]")) {
 }
 let answerBoard = {}, puzzle = {}, userAnswer = [], lockedGrids = [];
 function newGame(mode, size, isTodaysPuzzle) {
+    document.getElementById("game").classList.remove("tutorial");
+    generator = generateRand();
     document.getElementById("checkButton").classList.add("show");
     document.getElementById("goodContainer").classList.remove("show");
     answerBoard = generateAnswer(size, isTodaysPuzzle);
@@ -719,29 +719,62 @@ for (let i of document.querySelectorAll(".new-game")) {
     i.addEventListener("pointerdown", function () {
         newGame(i.dataset.mode, Number(i.dataset.size), Boolean(Number(i.dataset.isTodaysPuzzle)));
 
-        for (let childNode of document.getElementById("board").childNodes) {
-            childNode.addEventListener("pointerdown", function (e) {
-                if (puzzle.given[Number(childNode.dataset.x)][Number(childNode.dataset.y)] != -1) return;
-                downButton = e.button;
-                if (e.button == 0) {
-                    paint(childNode, true);
-                } else if (e.button == 2) {
-                    lockedGrids[Number(childNode.dataset.x)][Number(childNode.dataset.y)] = !lockedGrids[Number(childNode.dataset.x)][Number(childNode.dataset.y)];
-                    if (lockedGrids[Number(childNode.dataset.x)][Number(childNode.dataset.y)]) childNode.classList.add("locked");
-                    else childNode.classList.remove("locked");
-                }
-            });
-            childNode.addEventListener("pointerenter", function () {
-                if (puzzle.given[Number(childNode.dataset.x)][Number(childNode.dataset.y)] != -1) return;
-                if (downButton == 0) {
-                    paint(childNode, false);
-                }
-            });
-            childNode.oncontextmenu = (e) => {
-                e.preventDefault();
-            };
-        }
+        addEventsForGrids();
     });
+}
+function addEventsForGrids() {
+    for (let childNode of document.getElementById("board").childNodes) {
+        childNode.addEventListener("pointerdown", function (e) {
+            if (puzzle.given[Number(childNode.dataset.x)][Number(childNode.dataset.y)] != -1) return;
+
+            if (tutorialStep != -1) {
+                if (!TUTORIAL.steps[tutorialStep].target) {
+                    tutorialStep++;
+                    if (tutorialStep < TUTORIAL.steps.length) loadTutorial(tutorialStep);
+                    return;
+                } else {
+                    let matchTarget = false;
+                    for (let targetCoord of TUTORIAL.steps[tutorialStep].target) if (targetCoord.x == Number(childNode.dataset.x) && targetCoord.y == Number(childNode.dataset.y)) {
+                        matchTarget = true;
+                        break;
+                    }
+                    if (!matchTarget) return;
+                }
+            }
+
+            downButton = e.button;
+            if (e.button == 0) {
+                paint(childNode, true);
+            } else if (e.button == 2) {
+                lockedGrids[Number(childNode.dataset.x)][Number(childNode.dataset.y)] = !lockedGrids[Number(childNode.dataset.x)][Number(childNode.dataset.y)];
+                if (lockedGrids[Number(childNode.dataset.x)][Number(childNode.dataset.y)]) childNode.classList.add("locked");
+                else childNode.classList.remove("locked");
+            }
+
+            if (tutorialStep != -1 && TUTORIAL.steps[tutorialStep].target) {
+                let targetFulfilled = true;
+                for (let i of TUTORIAL.steps[tutorialStep].target) {
+                    if ((i.color == 0 && !(lockedGrids[i.x][i.y] && userAnswer[i.x][i.y] == 0)) || (i.color == 1 && userAnswer[i.x][i.y] != 1)) {
+                        targetFulfilled = false;
+                        break;
+                    }
+                }
+                if (targetFulfilled) {
+                    tutorialStep++;
+                    if (tutorialStep < TUTORIAL.steps.length) loadTutorial(tutorialStep);
+                }
+            }
+        });
+        childNode.addEventListener("pointerenter", function () {
+            if (puzzle.given[Number(childNode.dataset.x)][Number(childNode.dataset.y)] != -1) return;
+            if (downButton == 0) {
+                paint(childNode, false);
+            }
+        });
+        childNode.oncontextmenu = (e) => {
+            e.preventDefault();
+        };
+    }
 }
 const THEME_LIST = ["white", "peach", "beige", "soft", "blorange", "blackellow", "lemon", "sky", "cosmic"];
 const THEME_NAMES = {
@@ -766,18 +799,20 @@ document.getElementById("checkButton").addEventListener("pointerdown", function 
     if (hasOShape(userAnswer)) isCorrect = false;
     else {
         let regions = getRegions(userAnswer);
-        outerFor: for (let i = 0; i < userAnswer.length; i++) for (let j = 0; j < userAnswer.length; j++) {
-            let region = getRegion(regions, {
-                "x": i,
-                "y": j
-            });
-            if (answerBoard.ends[i][j] && (!region.isLine
-                || (
-                    !(region.ends[0].x == i && region.ends[0].y == j)
-                    && !(region.ends[1].x == i && region.ends[1].y == j)
-                ))) {
-                isCorrect = false;
-                break outerFor;
+        outerFor: for (let i = 0; i < userAnswer.length; i++) {
+            for (let j = 0; j < userAnswer.length; j++) {
+                let region = getRegion(regions, {
+                    "x": i,
+                    "y": j
+                });
+                if (answerBoard.ends[i][j] && (!region.isLine
+                    || (
+                        !(region.ends[0].x == i && region.ends[0].y == j)
+                        && !(region.ends[1].x == i && region.ends[1].y == j)
+                    ))) {
+                    isCorrect = false;
+                    break outerFor;
+                }
             }
         }
     }
@@ -832,11 +867,13 @@ function* generateRand() {
         i++;
     }
 }
+let generator;
 function rand() {
-    return generateRand().next().value;
+    return generator.next().value;
 }
 const TUTORIAL = {
-    "board": [
+    "board": generateBoard(4, 0),
+    "ends": [
         [true, true, false, false],
         [false, false, false, true],
         [true, false, false, false],
@@ -852,6 +889,220 @@ const TUTORIAL = {
         [-1, -1, -1, 0],
         [-1, -1, -1, -1],
         [-1, -1, -1, -1],
-        [-1, -1, -1, -1],
-    ]
+        [-1, -1, -1, -1]
+    ],
+    "userAnswer": generateBoard(4, 0),
+    "answer": [
+        [0, 1, 1, 0],
+        [0, 0, 1, 1],
+        [1, 0, 0, 0],
+        [1, 1, 1, 0]
+    ],
+    "steps": [{
+        "step": "Let's get started.<br/>Tap these tiles to make them black.",
+        "highlight": [{
+            "x": 0,
+            "y": 2
+        }, {
+            "x": 1,
+            "y": 3
+        }],
+        "target": [{
+            "x": 0,
+            "y": 2,
+            "color": 1
+        }, {
+            "x": 1,
+            "y": 3,
+            "color": 1
+        }]
+    }, {
+        "step": "\"2\" indicates that there are 2 black tiles in its horizontally or vertically neighboring tiles.",
+        "highlight": [{
+            "x": 0,
+            "y": 2
+        }]
+    }, {
+        "step": "Among its neighbors, this tile is marked with a solid triangle and therefore cannot be changed.",
+        "highlight": [{
+            "x": 0,
+            "y": 3
+        }]
+    }, {
+        "step": "So just tap on these two tiles.",
+        "highlight": [{
+            "x": 0,
+            "y": 1
+        }, {
+            "x": 1,
+            "y": 2
+        }],
+        "target": [{
+            "x": 0,
+            "y": 1,
+            "color": 1
+        }, {
+            "x": 1,
+            "y": 2,
+            "color": 1
+        }]
+    }, {
+        "step": "2x2 areas of same color are not allowed.<br/>Right-click to lock a tile.",
+        "highlight": [{
+            "x": 0,
+            "y": 1
+        }, {
+            "x": 0,
+            "y": 2
+        }, {
+            "x": 1,
+            "y": 1
+        }, {
+            "x": 1,
+            "y": 2
+        }],
+        "target": [{
+            "x": 1,
+            "y": 1,
+            "color": 0
+        }]
+    }, {
+        "step": "As you can see, these four black tiles now forms a path, starting and ending with a circle tile respectively.",
+        "highlight": [{
+            "x": 0,
+            "y": 1
+        }, {
+            "x": 0,
+            "y": 2
+        }, {
+            "x": 1,
+            "y": 2
+        }, {
+            "x": 1,
+            "y": 3
+        }]
+    }, {
+        "step": "To \"protect\" the path, they must remain white.<br/>Lock these tiles.",
+        "highlight": [{
+            "x": 0,
+            "y": 0
+        }, {
+            "x": 2,
+            "y": 2
+        }, {
+            "x": 2,
+            "y": 3
+        }],
+        "target": [{
+            "x": 0,
+            "y": 0,
+            "color": 0
+        }, {
+            "x": 2,
+            "y": 2,
+            "color": 0
+        }, {
+            "x": 2,
+            "y": 3,
+            "color": 0
+        }]
+    }, {
+        "step": "Paths can be either black or white. Since this circle tile is white, it must belong to a white path.",
+        "highlight": [{
+            "x": 0,
+            "y": 0
+        }]
+    }, {
+        "step": "To connect the circle with another one, we need to guide it out.<br/>So this tile's color should be...",
+        "highlight": [{
+            "x": 1,
+            "y": 0
+        }],
+        "target": [{
+            "x": 1,
+            "y": 0,
+            "color": 0
+        }]
+    }, {
+        "step": "Subsequently, you should know what to do with these two tiles...",
+        "highlight": [{
+            "x": 2,
+            "y": 1
+        }, {
+            "x": 3,
+            "y": 3
+        }],
+        "target": [{
+            "x": 2,
+            "y": 1,
+            "color": 0
+        }, {
+            "x": 3,
+            "y": 3,
+            "color": 0
+        }]
+    }, {
+        "step": "Can you figure the rest out on your own?<br/>When you're done, click on the check button.",
+        "highlight": [{
+            "x": 2,
+            "y": 0
+        }, {
+            "x": 3,
+            "y": 0
+        }, {
+            "x": 3,
+            "y": 1
+        }, {
+            "x": 3,
+            "y": 2
+        }], "target": [{
+            "x": 2,
+            "y": 0,
+            "color": 1
+        }, {
+            "x": 3,
+            "y": 0,
+            "color": 1
+        }, {
+            "x": 3,
+            "y": 1,
+            "color": 1
+        }, {
+            "x": 3,
+            "y": 2,
+            "color": 1
+        }]
+    }]
 };
+let tutorialStep = -1;
+function startTutorial() {
+    document.getElementById("game").classList.add("tutorial");
+    document.getElementById("gameTitle").innerText = "How to Play";
+    document.getElementById("checkButton").classList.add("show");
+    document.getElementById("goodContainer").classList.remove("show");
+    answerBoard = {
+        "board": TUTORIAL.answer,
+        "ends": TUTORIAL.ends
+    };
+    puzzle = {
+        "given": TUTORIAL.given,
+        "numbers": TUTORIAL.numbers
+    };
+    userAnswer = structuredClone(TUTORIAL.userAnswer);
+    lockedGrids = generateBoard(4, false);
+    renderBoard(TUTORIAL.board, TUTORIAL.ends, TUTORIAL.numbers, TUTORIAL.given);
+    addEventsForGrids();
+
+    tutorialStep = 0;
+    loadTutorial(tutorialStep);
+}
+function loadTutorial(stepIndex) {
+    for (let j of document.querySelectorAll(".highlight")) j.classList.remove("highlight");
+    document.getElementById("tutorialText").innerHTML = TUTORIAL.steps[stepIndex].step;
+    for (let j of TUTORIAL.steps[stepIndex].highlight) {
+        document.querySelector(`[data-x="${j.x}"][data-y="${j.y}"]`).classList.add("highlight");
+    }
+}
+document.getElementById("howToPlay").addEventListener("pointerdown", function () {
+    startTutorial();
+});
