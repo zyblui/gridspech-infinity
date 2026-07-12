@@ -659,7 +659,7 @@ function exploreFuturePaths({
                 "usedEnds": usedEnds
             });
 
-            /*let regions = getRegions(tempBoard);
+            let regions = getRegions(tempBoard);
             for (let i = 0; i < ends.length; i++) for (let j = 0; j < ends.length; j++) if(ends[i][j]) {
                 let region = getRegion(regions, {
                     "x": i,
@@ -672,7 +672,7 @@ function exploreFuturePaths({
                     ))) {
                     continue outerFor;
                 }
-            }*/
+            }
 
             if (!(coord.x == finishCoord.x && coord.y == finishCoord.y)) {
                 exploreFuturePaths(branches[branches.length - 1], ends, finishCoord, solutions);
@@ -707,7 +707,9 @@ function newGame(mode, size, isTodaysPuzzle) {
     document.getElementById("goodContainer").classList.remove("show");
     answerBoard = generateAnswer(size, isTodaysPuzzle);
     console.log("generatePuzzle", structuredClone(answerBoard.board), structuredClone(answerBoard.ends), mode);
+    let date=new Date();
     puzzle = generatePuzzle(answerBoard.board, answerBoard.ends, mode);
+    console.log(new Date()-date)
     userAnswer = structuredClone(puzzle.given);
     lockedGrids = generateBoard(size, false);
     for (let i = 0; i < userAnswer.length; i++) for (let j = 0; j < userAnswer.length; j++) {
