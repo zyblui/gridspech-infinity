@@ -700,6 +700,7 @@ for (let i of document.querySelectorAll("[data-for]")) {
 }
 let answerBoard = {}, puzzle = {}, userAnswer = [], lockedGrids = [];
 function newGame(mode, size, isTodaysPuzzle) {
+    tutorialStep = -1;
     document.getElementById("game").classList.remove("tutorial");
     generator = generateRand();
     document.getElementById("checkButton").classList.add("show");
