@@ -31,13 +31,18 @@ const DIRECTIONS = [{
     "x": 0,
     "y": -1
 }];
-function checkGridAvailability(board, coord, pathCoords, ends = [], finishCoord = { "x": -1, "y": -1 }) {
-    if (ends.length && ends[coord.x][coord.y] && !(finishCoord.x == coord.x && finishCoord.y == coord.y)) return false;
+function checkGridAvailability(board, coord, pathCoords, ends = []/*, finishCoord = { "x": -1, "y": -1 }*/) {
+    //if (ends.length && ends[coord.x][coord.y] && !(finishCoord.x == coord.x && finishCoord.y == coord.y)) return false;
     if (board[coord.x][coord.y] == Number(!board[pathCoords[0].x][pathCoords[0].y])) return false;
     for (let i of pathCoords) if (i.x == coord.x && i.y == coord.y) return false;
     let tempBoard = structuredClone(board);
     tempBoard[coord.x][coord.y] = tempBoard[pathCoords[0].x][pathCoords[0].y];
     let regions = getRegions(tempBoard);
+
+    /*if(!getRegion(regions, pathCoords[0]).isLine)return false;
+    else{
+
+    }*/
     return getRegion(regions, pathCoords[0]).isLine;
 }
 
@@ -385,7 +390,6 @@ function generatePuzzle(answer, ends, mode) {
             "y": j
         }).counterMin;
     }
-    console.log(structuredClone(tempSolutions));
     if (mode == "fairy") {
         while (tempSolutions.length > 1) {
 
@@ -504,22 +508,22 @@ function solve(ends, numbers) {
         for (let usedEnd of []) if (usedEnd.x == endsList[endIndex2].x && usedEnd.y == endsList[endIndex2].y) continue outerFor;
         break;
     }
-    let endIndex1 = 0;
-    outerFor3: for (; endIndex1 < endsList.length; endIndex1++) {
-        if (endIndex1 == endIndex2) continue outerFor3;
-        for (let usedEnd of []) if ((usedEnd.x == endsList[endIndex1].x && usedEnd.y == endsList[endIndex1].y)) continue outerFor3;
+    //let endIndex1 = 0;
+    //outerFor3: for (; endIndex1 < endsList.length; endIndex1++) {
+        //if (endIndex1 == endIndex2) continue outerFor3;
+        //for (let usedEnd of []) if ((usedEnd.x == endsList[endIndex1].x && usedEnd.y == endsList[endIndex1].y)) continue outerFor3;
 
         let board = generateBoard(ends.length, -1);
         board[endsList[endIndex2].x][endsList[endIndex2].y] = 1;
         branches.push({
-            "endIndex": endIndex1,
+            //"endIndex": endIndex1,
             "board": board,
             "branches": [],
             "pathCoords": [endsList[endIndex2]],
             "usedEnds": []
         });
-        exploreFuturePaths(branches[branches.length - 1], ends, endsList[endIndex1], solutions);
-    }
+        exploreFuturePaths(branches[branches.length - 1], ends, /*endsList[endIndex1],*/ solutions);
+    //}
 
     outerFor2: for (let solutionIndex = 0; solutionIndex < solutions.length; solutionIndex++) {
         if (!solutions[solutionIndex]) break;
@@ -556,6 +560,10 @@ function solve(ends, numbers) {
         solutions = [];
         solutions = iterateSolution(tempSolutions, endsList, ends);
     }
+    console.log({
+        "solutions": solutions,
+        "branches": branches
+    })
     return {
         "solutions": solutions,
         "branches": branches
@@ -571,28 +579,28 @@ function iterateSolution(tempSolutions, endsList, ends) {
             for (let usedEnd of tempSolution.usedEnds) if (usedEnd.x == endsList[endIndex2].x && usedEnd.y == endsList[endIndex2].y) continue outerFor;
             break;
         }
-        let endIndex1 = 0;
-        outerFor3: for (; endIndex1 < endsList.length; endIndex1++) {
-            if (endIndex1 == endIndex2) continue outerFor3;
-            for (let usedEnd of tempSolution.usedEnds) if ((usedEnd.x == endsList[endIndex1].x && usedEnd.y == endsList[endIndex1].y)) continue outerFor3;
+        //let endIndex1 = 0;
+        //outerFor3: for (; endIndex1 < endsList.length; endIndex1++) {
+        //    if (endIndex1 == endIndex2) continue outerFor3;
+        //    for (let usedEnd of tempSolution.usedEnds) if ((usedEnd.x == endsList[endIndex1].x && usedEnd.y == endsList[endIndex1].y)) continue outerFor3;
 
-            let board = tempSolution.board;
-            let colorList = [];
-            if (board[endsList[endIndex2].x][endsList[endIndex2].y] != -1) colorList = [board[endsList[endIndex2].x][endsList[endIndex2].y]];
-            else colorList = [0, 1];
-            for (let color of colorList) {
-                let tempBoard = structuredClone(board);
-                tempBoard[endsList[endIndex2].x][endsList[endIndex2].y] = color;
-                branches.push({
-                    "endIndex": endIndex1,
-                    "board": tempBoard,
-                    "branches": [],
-                    "pathCoords": [endsList[endIndex2]],
-                    "usedEnds": tempSolution.usedEnds
-                });
-                exploreFuturePaths(branches[branches.length - 1], ends, endsList[endIndex1], solutions);
-            }
+        let board = tempSolution.board;
+        let colorList = [];
+        if (board[endsList[endIndex2].x][endsList[endIndex2].y] != -1) colorList = [board[endsList[endIndex2].x][endsList[endIndex2].y]];
+        else colorList = [0, 1];
+        for (let color of colorList) {
+            let tempBoard = structuredClone(board);
+            tempBoard[endsList[endIndex2].x][endsList[endIndex2].y] = color;
+            branches.push({
+                //"endIndex": endIndex1,
+                "board": tempBoard,
+                "branches": [],
+                "pathCoords": [endsList[endIndex2]],
+                "usedEnds": tempSolution.usedEnds
+            });
+            exploreFuturePaths(branches[branches.length - 1], ends, /*endsList[endIndex1], */solutions);
         }
+        //}
 
     }
 
@@ -616,12 +624,12 @@ function iterateSolution(tempSolutions, endsList, ends) {
 }
 
 function exploreFuturePaths({
-    "endIndex": endIndex,
+    //"endIndex": endIndex,
     "board": board,
     "branches": branches,
     "pathCoords": pathCoords,
     "usedEnds": usedEnds
-}, ends, finishCoord, solutions) {
+}, ends, /*finishCoord,*/ solutions) {
 
     let coord = {
         "x": pathCoords[pathCoords.length - 1].x,
@@ -634,7 +642,7 @@ function exploreFuturePaths({
         if (checkGridAvailability(board, {
             "x": coord.x + j.x,
             "y": coord.y + j.y
-        }, pathCoords, ends, finishCoord)) dirAvailable.push(j);
+        }, pathCoords, ends/*, finishCoord*/)) dirAvailable.push(j);
     }
     if (dirAvailable.length) {
 
@@ -652,7 +660,7 @@ function exploreFuturePaths({
                 checkOShape(tempBoard);
             }
             branches.push({
-                "endIndex": endIndex,
+                //"endIndex": endIndex,
                 "board": tempBoard,
                 "branches": [],
                 "pathCoords": tempPathCoords,
@@ -660,7 +668,7 @@ function exploreFuturePaths({
             });
 
             let regions = getRegions(tempBoard);
-            for (let i = 0; i < ends.length; i++) for (let j = 0; j < ends.length; j++) if(ends[i][j]) {
+            for (let i = 0; i < ends.length; i++) for (let j = 0; j < ends.length; j++) if (ends[i][j]) {
                 let region = getRegion(regions, {
                     "x": i,
                     "y": j
@@ -674,8 +682,8 @@ function exploreFuturePaths({
                 }
             }
 
-            if (!(coord.x == finishCoord.x && coord.y == finishCoord.y)) {
-                exploreFuturePaths(branches[branches.length - 1], ends, finishCoord, solutions);
+            if (!ends[coord.x][coord.y]/*!(coord.x == finishCoord.x && coord.y == finishCoord.y)*/) {
+                exploreFuturePaths(branches[branches.length - 1], ends, /*finishCoord,*/ solutions);
             } else {
                 let lastCoord = tempPathCoords[tempPathCoords.length - 1];
                 for (let j of DIRECTIONS) {
@@ -683,10 +691,9 @@ function exploreFuturePaths({
                     if (tempBoard[lastCoord.x + j.x][lastCoord.y + j.y] != color) tempBoard[lastCoord.x + j.x][lastCoord.y + j.y] = Number(!color);
                 }
                 checkOShape(tempBoard);
-
                 solutions.push({
                     "board": tempBoard,
-                    "usedEnds": [...usedEnds, tempPathCoords[0], finishCoord]
+                    "usedEnds": [...usedEnds, tempPathCoords[0], lastCoord/*finishCoord*/]
                 });
             }
         }
@@ -707,9 +714,9 @@ function newGame(mode, size, isTodaysPuzzle) {
     document.getElementById("goodContainer").classList.remove("show");
     answerBoard = generateAnswer(size, isTodaysPuzzle);
     console.log("generatePuzzle", structuredClone(answerBoard.board), structuredClone(answerBoard.ends), mode);
-    let date=new Date();
+    let date = new Date();
     puzzle = generatePuzzle(answerBoard.board, answerBoard.ends, mode);
-    console.log(new Date()-date)
+    console.log(new Date() - date);
     userAnswer = structuredClone(puzzle.given);
     lockedGrids = generateBoard(size, false);
     for (let i = 0; i < userAnswer.length; i++) for (let j = 0; j < userAnswer.length; j++) {
