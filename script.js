@@ -349,6 +349,30 @@ document.querySelector("body").addEventListener("pointerup", function () {
 document.querySelector("body").addEventListener("pointerleave", function () {
     downButton = -1;
 });
+function isNonTargetInput(node) {
+    let matchTarget = false;
+    for (let targetCoord of TUTORIAL.steps[tutorialStep].target) if (targetCoord.x == Number(node.dataset.x) && targetCoord.y == Number(node.dataset.y)) {
+        matchTarget = true;
+        break;
+    }
+    if (!matchTarget) return true;
+    else return false;
+}
+function checkTutorialTarget() {
+    if (tutorialStep != -1 && TUTORIAL.steps[tutorialStep].target) {
+        let targetFulfilled = true;
+        for (let i of TUTORIAL.steps[tutorialStep].target) {
+            if ((i.color == 0 && !(lockedGrids[i.x][i.y] && userAnswer[i.x][i.y] == 0)) || (i.color == 1 && userAnswer[i.x][i.y] != 1)) {
+                targetFulfilled = false;
+                break;
+            }
+        }
+        if (targetFulfilled) {
+            tutorialStep++;
+            if (tutorialStep < TUTORIAL.steps.length) loadTutorial(tutorialStep);
+        }
+    }
+}
 function paint(element, isMouseDown) {
     if (lockedGrids[Number(element.dataset.x)][Number(element.dataset.y)]) return;
     if (userAnswer[Number(element.dataset.x)][Number(element.dataset.y)] == 1 && (isMouseDown || paintColor == 0)) {
@@ -752,12 +776,7 @@ function addEventsForGrids() {
                     if (tutorialStep < TUTORIAL.steps.length) loadTutorial(tutorialStep);
                     return;
                 } else {
-                    let matchTarget = false;
-                    for (let targetCoord of TUTORIAL.steps[tutorialStep].target) if (targetCoord.x == Number(childNode.dataset.x) && targetCoord.y == Number(childNode.dataset.y)) {
-                        matchTarget = true;
-                        break;
-                    }
-                    if (!matchTarget) return;
+                    if (isNonTargetInput(childNode)) return;
                 }
             }
 
@@ -769,25 +788,14 @@ function addEventsForGrids() {
                 if (lockedGrids[Number(childNode.dataset.x)][Number(childNode.dataset.y)]) childNode.classList.add("locked");
                 else childNode.classList.remove("locked");
             }
-
-            if (tutorialStep != -1 && TUTORIAL.steps[tutorialStep].target) {
-                let targetFulfilled = true;
-                for (let i of TUTORIAL.steps[tutorialStep].target) {
-                    if ((i.color == 0 && !(lockedGrids[i.x][i.y] && userAnswer[i.x][i.y] == 0)) || (i.color == 1 && userAnswer[i.x][i.y] != 1)) {
-                        targetFulfilled = false;
-                        break;
-                    }
-                }
-                if (targetFulfilled) {
-                    tutorialStep++;
-                    if (tutorialStep < TUTORIAL.steps.length) loadTutorial(tutorialStep);
-                }
-            }
+            checkTutorialTarget();
         });
         childNode.addEventListener("pointerenter", function () {
             if (puzzle.given[Number(childNode.dataset.x)][Number(childNode.dataset.y)] != -1) return;
             if (downButton == 0) {
+                if (tutorialStep != -1 && isNonTargetInput(childNode)) return;
                 paint(childNode, false);
+                checkTutorialTarget();
             }
         });
         childNode.oncontextmenu = (e) => {
