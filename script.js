@@ -31,18 +31,12 @@ const DIRECTIONS = [{
     "x": 0,
     "y": -1
 }];
-function checkGridAvailability(board, coord, pathCoords, ends = []/*, finishCoord = { "x": -1, "y": -1 }*/) {
-    //if (ends.length && ends[coord.x][coord.y] && !(finishCoord.x == coord.x && finishCoord.y == coord.y)) return false;
+function checkGridAvailability(board, coord, pathCoords, ends = []) {
     if (board[coord.x][coord.y] == Number(!board[pathCoords[0].x][pathCoords[0].y])) return false;
     for (let i of pathCoords) if (i.x == coord.x && i.y == coord.y) return false;
     let tempBoard = structuredClone(board);
     tempBoard[coord.x][coord.y] = tempBoard[pathCoords[0].x][pathCoords[0].y];
     let regions = getRegions(tempBoard);
-
-    /*if(!getRegion(regions, pathCoords[0]).isLine)return false;
-    else{
-
-    }*/
     return getRegion(regions, pathCoords[0]).isLine;
 }
 
@@ -114,10 +108,11 @@ function generateAnswer(size, isTodaysPuzzle) {
             hasUnfilledGrids = true;
         }
         if (!hasUnfilledGrids) {
-            /*regions.sort(function (a, b) {
+            regions.sort(function (a, b) {
                 return b.ends.length * b.grids.length - a.ends.length * a.grids.length;
             });
-            regions = regions.slice(0, size - 2);*/
+            regions = regions.slice(0, size - 2);
+
             for (let j of regions) if (j.isLine && j.grids.length > 1) {
                 ends[j.ends[0].x][j.ends[0].y] = true;
                 ends[j.ends[1].x][j.ends[1].y] = true;
@@ -374,8 +369,38 @@ function generatePuzzle(answer, ends, mode) {
     let solutions = solve(ends, puzzleNumber).solutions;
 
     let tempSolutions = [];
+    let hasMatch = false;
     for (let solution of solutions) {
-        tempSolutions.push(solution.board);
+        let solutionMatchesAnswer = true;
+        if (!hasMatch) {
+            outerFor: for (let i = 0; i < answer.length; i++) {
+                for (let j = 0; j < answer.length; j++) {
+                    if (!(answer[i][j] == -1 || answer[i][j] == solution.board[i][j])) {
+                        solutionMatchesAnswer = false;
+                        break outerFor;
+                    }
+                }
+            }
+        } else solutionMatchesAnswer = false;
+        if (solutionMatchesAnswer) {
+            hasMatch = true;
+            let possibilities = [structuredClone(solution.board)];
+            for (let i = 0; i < answer.length; i++) for (let j = 0; j < answer.length; j++) {
+                if (solution.board[i][j] == -1) {
+                    let tempPossibilities = [];
+                    for (let possibility of possibilities) {
+                        let tempBoard1 = structuredClone(possibility), tempBoard2 = structuredClone(possibility);
+                        tempBoard1[i][j] = 0;
+                        tempBoard2[i][j] = 1;
+                        tempPossibilities.push(tempBoard1, tempBoard2);
+                    }
+                    possibilities = structuredClone(tempPossibilities);
+                }
+            }
+            tempSolutions.push(...possibilities);
+        }
+        else tempSolutions.push(solution.board);
+
         let reversedBoard = structuredClone(solution.board);
         for (let i = 0; i < reversedBoard.length; i++) for (let j = 0; j < reversedBoard.length; j++) {
             if (reversedBoard[i][j] != -1) reversedBoard[i][j] = Number(!reversedBoard[i][j]);
@@ -508,22 +533,15 @@ function solve(ends, numbers) {
         for (let usedEnd of []) if (usedEnd.x == endsList[endIndex2].x && usedEnd.y == endsList[endIndex2].y) continue outerFor;
         break;
     }
-    //let endIndex1 = 0;
-    //outerFor3: for (; endIndex1 < endsList.length; endIndex1++) {
-        //if (endIndex1 == endIndex2) continue outerFor3;
-        //for (let usedEnd of []) if ((usedEnd.x == endsList[endIndex1].x && usedEnd.y == endsList[endIndex1].y)) continue outerFor3;
-
-        let board = generateBoard(ends.length, -1);
-        board[endsList[endIndex2].x][endsList[endIndex2].y] = 1;
-        branches.push({
-            //"endIndex": endIndex1,
-            "board": board,
-            "branches": [],
-            "pathCoords": [endsList[endIndex2]],
-            "usedEnds": []
-        });
-        exploreFuturePaths(branches[branches.length - 1], ends, /*endsList[endIndex1],*/ solutions);
-    //}
+    let board = generateBoard(ends.length, -1);
+    board[endsList[endIndex2].x][endsList[endIndex2].y] = 1;
+    branches.push({
+        "board": board,
+        "branches": [],
+        "pathCoords": [endsList[endIndex2]],
+        "usedEnds": []
+    });
+    exploreFuturePaths(branches[branches.length - 1], ends, solutions);
 
     outerFor2: for (let solutionIndex = 0; solutionIndex < solutions.length; solutionIndex++) {
         if (!solutions[solutionIndex]) break;
@@ -563,7 +581,7 @@ function solve(ends, numbers) {
     console.log({
         "solutions": solutions,
         "branches": branches
-    })
+    });
     return {
         "solutions": solutions,
         "branches": branches
@@ -579,11 +597,6 @@ function iterateSolution(tempSolutions, endsList, ends) {
             for (let usedEnd of tempSolution.usedEnds) if (usedEnd.x == endsList[endIndex2].x && usedEnd.y == endsList[endIndex2].y) continue outerFor;
             break;
         }
-        //let endIndex1 = 0;
-        //outerFor3: for (; endIndex1 < endsList.length; endIndex1++) {
-        //    if (endIndex1 == endIndex2) continue outerFor3;
-        //    for (let usedEnd of tempSolution.usedEnds) if ((usedEnd.x == endsList[endIndex1].x && usedEnd.y == endsList[endIndex1].y)) continue outerFor3;
-
         let board = tempSolution.board;
         let colorList = [];
         if (board[endsList[endIndex2].x][endsList[endIndex2].y] != -1) colorList = [board[endsList[endIndex2].x][endsList[endIndex2].y]];
@@ -592,15 +605,13 @@ function iterateSolution(tempSolutions, endsList, ends) {
             let tempBoard = structuredClone(board);
             tempBoard[endsList[endIndex2].x][endsList[endIndex2].y] = color;
             branches.push({
-                //"endIndex": endIndex1,
                 "board": tempBoard,
                 "branches": [],
                 "pathCoords": [endsList[endIndex2]],
                 "usedEnds": tempSolution.usedEnds
             });
-            exploreFuturePaths(branches[branches.length - 1], ends, /*endsList[endIndex1], */solutions);
+            exploreFuturePaths(branches[branches.length - 1], ends, solutions);
         }
-        //}
 
     }
 
@@ -624,12 +635,11 @@ function iterateSolution(tempSolutions, endsList, ends) {
 }
 
 function exploreFuturePaths({
-    //"endIndex": endIndex,
     "board": board,
     "branches": branches,
     "pathCoords": pathCoords,
     "usedEnds": usedEnds
-}, ends, /*finishCoord,*/ solutions) {
+}, ends, solutions) {
 
     let coord = {
         "x": pathCoords[pathCoords.length - 1].x,
@@ -642,7 +652,7 @@ function exploreFuturePaths({
         if (checkGridAvailability(board, {
             "x": coord.x + j.x,
             "y": coord.y + j.y
-        }, pathCoords, ends/*, finishCoord*/)) dirAvailable.push(j);
+        }, pathCoords, ends)) dirAvailable.push(j);
     }
     if (dirAvailable.length) {
 
@@ -660,7 +670,6 @@ function exploreFuturePaths({
                 checkOShape(tempBoard);
             }
             branches.push({
-                //"endIndex": endIndex,
                 "board": tempBoard,
                 "branches": [],
                 "pathCoords": tempPathCoords,
@@ -682,8 +691,8 @@ function exploreFuturePaths({
                 }
             }
 
-            if (!ends[coord.x][coord.y]/*!(coord.x == finishCoord.x && coord.y == finishCoord.y)*/) {
-                exploreFuturePaths(branches[branches.length - 1], ends, /*finishCoord,*/ solutions);
+            if (!ends[coord.x][coord.y]) {
+                exploreFuturePaths(branches[branches.length - 1], ends, solutions);
             } else {
                 let lastCoord = tempPathCoords[tempPathCoords.length - 1];
                 for (let j of DIRECTIONS) {
@@ -693,7 +702,7 @@ function exploreFuturePaths({
                 checkOShape(tempBoard);
                 solutions.push({
                     "board": tempBoard,
-                    "usedEnds": [...usedEnds, tempPathCoords[0], lastCoord/*finishCoord*/]
+                    "usedEnds": [...usedEnds, tempPathCoords[0], lastCoord]
                 });
             }
         }

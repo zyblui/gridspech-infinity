@@ -471,6 +471,7 @@ a {
     outline-offset: -2vh;
     z-index: 999;
 }
-#tutorialText:not(.tutorial #tutorialText){
+
+#tutorialText:not(.tutorial #tutorialText) {
     display: none;
 }
