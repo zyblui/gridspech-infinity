@@ -2,7 +2,7 @@ interface Coord {
     "x": number,
     "y": number;
 }
-type Board<valueType> = valueType[][];
+type Board<T> = T[][];
 interface Region {
     "grids": Coord[],
     "isLine": boolean,
@@ -172,7 +172,6 @@ function generateAnswer(size: number, isTodaysPuzzle: boolean): Answer {
         if (lastCoord.x + j.x < 0 || lastCoord.x + j.x >= size || lastCoord.y + j.y >= size || lastCoord.y + j.y < 0) continue;
         if (board[lastCoord.x + j.x][lastCoord.y + j.y] != color) board[lastCoord.x + j.x][lastCoord.y + j.y] = Number(!color);
     }
-    ends[lastCoord.x][lastCoord.y] = true;
     checkOShape(board);
     let regions: Region[] = getRegions(board);
     getRegion(regions, lastCoord)!.finished = true;
@@ -423,10 +422,10 @@ function renderBoard(board: Board<number>, ends: Board<boolean>, numbers: Board<
 }
 
 let downButton: number = -1, paintColor: number = -1;
-document.querySelector("body")!.addEventListener("pointerup", function (): void {
+document.body.addEventListener("pointerup", function (): void {
     downButton = -1;
 });
-document.querySelector("body")!.addEventListener("pointerleave", function (): void {
+document.body.addEventListener("pointerleave", function (): void {
     downButton = -1;
 });
 function isNonTargetInput(node: HTMLDivElement): boolean {
@@ -439,7 +438,7 @@ function isNonTargetInput(node: HTMLDivElement): boolean {
     else return false;
 }
 function checkTutorialTarget(): void {
-    if (tutorialStep != -1 && TUTORIAL.steps[tutorialStep].target) {
+    if (tutorialStep >= 0 && tutorialStep < TUTORIAL.steps.length && TUTORIAL.steps[tutorialStep].target) {
         let targetFulfilled: boolean = true;
         for (let i of TUTORIAL.steps[tutorialStep].target as Target[]) {
             if ((i.color == 0 && !(lockedGrids[i.x][i.y] && userAnswer[i.x][i.y] == 0)) || (i.color == 1 && userAnswer[i.x][i.y] != 1)) {
@@ -477,16 +476,22 @@ function generatePuzzle(answer: Board<number>, ends: Board<boolean>, mode: strin
     for (let solution of solutions) {
         let solutionMatchesAnswer: boolean = true;
         if (!hasMatch) {
+            let isReversed: number = -1;
             outerFor: for (let i: number = 0; i < answer.length; i++) {
-                for (let j: number = 0; j < answer.length; j++)  if (!(answer[i][j] == -1 || answer[i][j] == solution.board[i][j])) {
-                    solutionMatchesAnswer = false;
-                    break outerFor;
+                for (let j: number = 0; j < answer.length; j++) {
+                    if (!(solution.board[i][j] == -1 || (isReversed == 0 && answer[i][j] == solution.board[i][j]) || (isReversed == 1 && answer[i][j] != solution.board[i][j]) || isReversed == -1)) {
+                        solutionMatchesAnswer = false;
+                        break outerFor;
+                    }
+                    if (isReversed == -1) {
+                        if (solution.board[i][j] != -1) isReversed = Number(!(answer[i][j] == solution.board[i][j]));
+                    }
                 }
             }
         } else solutionMatchesAnswer = false;
+        let possibilities: Board<number>[] = [structuredClone(solution.board)];
         if (solutionMatchesAnswer) {
             hasMatch = true;
-            let possibilities: Board<number>[] = [structuredClone(solution.board)];
             for (let i: number = 0; i < answer.length; i++) for (let j: number = 0; j < answer.length; j++) {
                 if (solution.board[i][j] == -1) {
                     let tempPossibilities: Board<number>[] = [];
@@ -499,15 +504,16 @@ function generatePuzzle(answer: Board<number>, ends: Board<boolean>, mode: strin
                     possibilities = structuredClone(tempPossibilities);
                 }
             }
-            tempSolutions.push(...possibilities);
+            console.log("possibilities", structuredClone(possibilities));
         }
-        else tempSolutions.push(solution.board);
-
-        let reversedBoard: Board<number> = structuredClone(solution.board);
-        for (let i: number = 0; i < reversedBoard.length; i++) for (let j: number = 0; j < reversedBoard.length; j++) {
-            if (reversedBoard[i][j] != -1) reversedBoard[i][j] = Number(!reversedBoard[i][j]);
+        tempSolutions.push(...possibilities);
+        for (let possibility of possibilities) {
+            let reversedBoard: Board<number> = structuredClone(possibility);
+            for (let i: number = 0; i < reversedBoard.length; i++) for (let j: number = 0; j < reversedBoard.length; j++) {
+                if (reversedBoard[i][j] != -1) reversedBoard[i][j] = Number(!reversedBoard[i][j]);
+            }
+            tempSolutions.push(reversedBoard);
         }
-        tempSolutions.push(reversedBoard);
     }
 
     let answerNumber: Board<number> = generateBoard(answer.length, 0);
@@ -519,7 +525,6 @@ function generatePuzzle(answer: Board<number>, ends: Board<boolean>, mode: strin
     }
     if (mode == "fairy") {
         while (tempSolutions.length > 1) {
-
             let sameToAnswer: Board<number> = generateBoard(answer.length, 0);
             for (let solution of tempSolutions) {
                 for (let i: number = 0; i < solution.length; i++) for (let j: number = 0; j < solution.length; j++) {
@@ -628,7 +633,7 @@ function solve(ends: Board<boolean>, numbers: Board<number>): {
             "number": numbers[i][j]
         });
     }
-    let endsList: Coord[] = [], branches = [], solutions: Solution[] = [];
+    let endsList: Coord[] = [], branches: Branch[] = [], solutions: Solution[] = [];
     for (let i: number = 0; i < ends.length; i++) for (let j: number = 0; j < ends.length; j++) if (ends[i][j]) endsList.push({
         "x": i,
         "y": j
@@ -643,7 +648,7 @@ function solve(ends: Board<boolean>, numbers: Board<number>): {
         "usedEnds": []
     });
     exploreFuturePaths(branches[branches.length - 1], ends, solutions);
-
+    console.log("solutions", structuredClone(solutions));
     outerFor2: for (let solutionIndex: number = 0; solutionIndex < solutions.length; solutionIndex++) {
         if (!solutions[solutionIndex]) break;
         let regions: Region[] = getRegions(solutions[solutionIndex].board);
@@ -659,7 +664,6 @@ function solve(ends: Board<boolean>, numbers: Board<number>): {
                 continue outerFor2;
             }
         }
-
         for (let number of numberList) {
             let counters: Counters = getNumber(solutions[solutionIndex].board, {
                 "x": number.x,
@@ -671,7 +675,6 @@ function solve(ends: Board<boolean>, numbers: Board<number>): {
                 continue outerFor2;
             }
         }
-
     }
     while (solutions[0].usedEnds.length < endsList.length) {
         branches = [];
@@ -679,10 +682,6 @@ function solve(ends: Board<boolean>, numbers: Board<number>): {
         solutions = [];
         solutions = iterateSolution(tempSolutions, endsList, ends);
     }
-    console.log({
-        "solutions": solutions,
-        "branches": branches
-    });
     return {
         "solutions": solutions,
         "branches": branches
@@ -850,8 +849,7 @@ function addEventsForGrids(): void {
     for (let childNode of document.getElementById("board")!.childNodes as NodeListOf<HTMLDivElement>) {
         childNode.addEventListener("pointerdown", function (e: PointerEvent): void {
             if (puzzle.given[Number(childNode.dataset.x)][Number(childNode.dataset.y)] != -1) return;
-
-            if (tutorialStep != -1) {
+            if (tutorialStep >= 0 && tutorialStep < TUTORIAL.steps.length) {
                 if (!TUTORIAL.steps[tutorialStep].target) {
                     tutorialStep++;
                     if (tutorialStep < TUTORIAL.steps.length) loadTutorial(tutorialStep);
@@ -860,7 +858,6 @@ function addEventsForGrids(): void {
                     if (isNonTargetInput(childNode)) return;
                 }
             }
-
             downButton = e.button;
             if (e.button == 0) {
                 paint(childNode, true);
@@ -874,7 +871,7 @@ function addEventsForGrids(): void {
         childNode.addEventListener("pointerenter", function (): void {
             if (puzzle.given[Number(childNode.dataset.x)][Number(childNode.dataset.y)] != -1) return;
             if (downButton == 0) {
-                if (tutorialStep != -1 && isNonTargetInput(childNode)) return;
+                if (tutorialStep >= 0 && tutorialStep < TUTORIAL.steps.length && isNonTargetInput(childNode)) return;
                 paint(childNode, false);
                 checkTutorialTarget();
             }
@@ -885,9 +882,9 @@ function addEventsForGrids(): void {
     }
 }
 document.getElementById("theme")!.addEventListener("pointerdown", function (): void {
-    let newTheme: string = THEME_LIST[(THEME_LIST.indexOf(document.querySelector("body")!.classList[0]) + 1) % THEME_LIST.length];
-    document.querySelector("body")!.classList.value = "";
-    document.querySelector("body")!.classList.add(newTheme);
+    let newTheme: string = THEME_LIST[(THEME_LIST.indexOf(document.body.classList[0]) + 1) % THEME_LIST.length];
+    document.body.classList.value = "";
+    document.body.classList.add(newTheme);
     (document.querySelector("#theme .value") as HTMLElement).innerText = THEME_NAMES[newTheme];
 });
 document.getElementById("checkButton")!.addEventListener("pointerdown", function (): void {
@@ -895,17 +892,16 @@ document.getElementById("checkButton")!.addEventListener("pointerdown", function
     if (hasOShape(userAnswer)) isCorrect = false;
     else {
         let regions: Region[] = getRegions(userAnswer);
+
         outerFor: for (let i: number = 0; i < userAnswer.length; i++) {
-            for (let j: number = 0; j < userAnswer.length; j++) {
+            for (let j: number = 0; j < userAnswer.length; j++) if (answerBoard.ends[i][j]) {
                 let region: Region = getRegion(regions, {
                     "x": i,
                     "y": j
                 }) as Region;
-                if (answerBoard.ends[i][j] && (!region.isLine
-                    || (
-                        !(region.ends[0].x == i && region.ends[0].y == j)
-                        && !(region.ends[1].x == i && region.ends[1].y == j)
-                    ))) {
+                if (!region.isLine
+                    || !answerBoard.ends[region.ends[0].x][region.ends[0].y]
+                    || !answerBoard.ends[region.ends[1].x][region.ends[1].y]) {
                     isCorrect = false;
                     break outerFor;
                 }
@@ -918,6 +914,11 @@ document.getElementById("checkButton")!.addEventListener("pointerdown", function
     }
 });
 function hasOShape(board: Board<number>): boolean {
+    for (let i: number = 0; i < board.length - 1; i++) for (let j: number = 0; j < board.length - 1; j++) {
+        if (board[i][j] == board[i + 1][j] && board[i][j] == board[i][j + 1] && board[i][j] == board[i + 1][j + 1]) {
+            return true;
+        }
+    }
     return false;
 }
 function* generateRand(): Generator {

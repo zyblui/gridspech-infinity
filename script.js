@@ -143,7 +143,6 @@ function generateAnswer(size, isTodaysPuzzle) {
         if (board[lastCoord.x + j.x][lastCoord.y + j.y] != color)
             board[lastCoord.x + j.x][lastCoord.y + j.y] = Number(!color);
     }
-    ends[lastCoord.x][lastCoord.y] = true;
     checkOShape(board);
     let regions = getRegions(board);
     getRegion(regions, lastCoord).finished = true;
@@ -440,10 +439,10 @@ function renderBoard(board, ends, numbers, given) {
         }`);
 }
 let downButton = -1, paintColor = -1;
-document.querySelector("body").addEventListener("pointerup", function () {
+document.body.addEventListener("pointerup", function () {
     downButton = -1;
 });
-document.querySelector("body").addEventListener("pointerleave", function () {
+document.body.addEventListener("pointerleave", function () {
     downButton = -1;
 });
 function isNonTargetInput(node) {
@@ -459,7 +458,7 @@ function isNonTargetInput(node) {
         return false;
 }
 function checkTutorialTarget() {
-    if (tutorialStep != -1 && TUTORIAL.steps[tutorialStep].target) {
+    if (tutorialStep >= 0 && tutorialStep < TUTORIAL.steps.length && TUTORIAL.steps[tutorialStep].target) {
         let targetFulfilled = true;
         for (let i of TUTORIAL.steps[tutorialStep].target) {
             if ((i.color == 0 && !(lockedGrids[i.x][i.y] && userAnswer[i.x][i.y] == 0)) || (i.color == 1 && userAnswer[i.x][i.y] != 1)) {
@@ -499,19 +498,25 @@ function generatePuzzle(answer, ends, mode) {
     for (let solution of solutions) {
         let solutionMatchesAnswer = true;
         if (!hasMatch) {
+            let isReversed = -1;
             outerFor: for (let i = 0; i < answer.length; i++) {
-                for (let j = 0; j < answer.length; j++)
-                    if (!(answer[i][j] == -1 || answer[i][j] == solution.board[i][j])) {
+                for (let j = 0; j < answer.length; j++) {
+                    if (!(solution.board[i][j] == -1 || (isReversed == 0 && answer[i][j] == solution.board[i][j]) || (isReversed == 1 && answer[i][j] != solution.board[i][j]) || isReversed == -1)) {
                         solutionMatchesAnswer = false;
                         break outerFor;
                     }
+                    if (isReversed == -1) {
+                        if (solution.board[i][j] != -1)
+                            isReversed = Number(!(answer[i][j] == solution.board[i][j]));
+                    }
+                }
             }
         }
         else
             solutionMatchesAnswer = false;
+        let possibilities = [structuredClone(solution.board)];
         if (solutionMatchesAnswer) {
             hasMatch = true;
-            let possibilities = [structuredClone(solution.board)];
             for (let i = 0; i < answer.length; i++)
                 for (let j = 0; j < answer.length; j++) {
                     if (solution.board[i][j] == -1) {
@@ -525,17 +530,18 @@ function generatePuzzle(answer, ends, mode) {
                         possibilities = structuredClone(tempPossibilities);
                     }
                 }
-            tempSolutions.push(...possibilities);
+            console.log("possibilities", structuredClone(possibilities));
         }
-        else
-            tempSolutions.push(solution.board);
-        let reversedBoard = structuredClone(solution.board);
-        for (let i = 0; i < reversedBoard.length; i++)
-            for (let j = 0; j < reversedBoard.length; j++) {
-                if (reversedBoard[i][j] != -1)
-                    reversedBoard[i][j] = Number(!reversedBoard[i][j]);
-            }
-        tempSolutions.push(reversedBoard);
+        tempSolutions.push(...possibilities);
+        for (let possibility of possibilities) {
+            let reversedBoard = structuredClone(possibility);
+            for (let i = 0; i < reversedBoard.length; i++)
+                for (let j = 0; j < reversedBoard.length; j++) {
+                    if (reversedBoard[i][j] != -1)
+                        reversedBoard[i][j] = Number(!reversedBoard[i][j]);
+                }
+            tempSolutions.push(reversedBoard);
+        }
     }
     let answerNumber = generateBoard(answer.length, 0);
     for (let i = 0; i < answer.length; i++)
@@ -679,6 +685,7 @@ function solve(ends, numbers) {
         "usedEnds": []
     });
     exploreFuturePaths(branches[branches.length - 1], ends, solutions);
+    console.log("solutions", structuredClone(solutions));
     outerFor2: for (let solutionIndex = 0; solutionIndex < solutions.length; solutionIndex++) {
         if (!solutions[solutionIndex])
             break;
@@ -711,10 +718,6 @@ function solve(ends, numbers) {
         solutions = [];
         solutions = iterateSolution(tempSolutions, endsList, ends);
     }
-    console.log({
-        "solutions": solutions,
-        "branches": branches
-    });
     return {
         "solutions": solutions,
         "branches": branches
@@ -882,7 +885,7 @@ function addEventsForGrids() {
         childNode.addEventListener("pointerdown", function (e) {
             if (puzzle.given[Number(childNode.dataset.x)][Number(childNode.dataset.y)] != -1)
                 return;
-            if (tutorialStep != -1) {
+            if (tutorialStep >= 0 && tutorialStep < TUTORIAL.steps.length) {
                 if (!TUTORIAL.steps[tutorialStep].target) {
                     tutorialStep++;
                     if (tutorialStep < TUTORIAL.steps.length)
@@ -911,7 +914,7 @@ function addEventsForGrids() {
             if (puzzle.given[Number(childNode.dataset.x)][Number(childNode.dataset.y)] != -1)
                 return;
             if (downButton == 0) {
-                if (tutorialStep != -1 && isNonTargetInput(childNode))
+                if (tutorialStep >= 0 && tutorialStep < TUTORIAL.steps.length && isNonTargetInput(childNode))
                     return;
                 paint(childNode, false);
                 checkTutorialTarget();
@@ -923,9 +926,9 @@ function addEventsForGrids() {
     }
 }
 document.getElementById("theme").addEventListener("pointerdown", function () {
-    let newTheme = THEME_LIST[(THEME_LIST.indexOf(document.querySelector("body").classList[0]) + 1) % THEME_LIST.length];
-    document.querySelector("body").classList.value = "";
-    document.querySelector("body").classList.add(newTheme);
+    let newTheme = THEME_LIST[(THEME_LIST.indexOf(document.body.classList[0]) + 1) % THEME_LIST.length];
+    document.body.classList.value = "";
+    document.body.classList.add(newTheme);
     document.querySelector("#theme .value").innerText = THEME_NAMES[newTheme];
 });
 document.getElementById("checkButton").addEventListener("pointerdown", function () {
@@ -935,18 +938,19 @@ document.getElementById("checkButton").addEventListener("pointerdown", function 
     else {
         let regions = getRegions(userAnswer);
         outerFor: for (let i = 0; i < userAnswer.length; i++) {
-            for (let j = 0; j < userAnswer.length; j++) {
-                let region = getRegion(regions, {
-                    "x": i,
-                    "y": j
-                });
-                if (answerBoard.ends[i][j] && (!region.isLine
-                    || (!(region.ends[0].x == i && region.ends[0].y == j)
-                        && !(region.ends[1].x == i && region.ends[1].y == j)))) {
-                    isCorrect = false;
-                    break outerFor;
+            for (let j = 0; j < userAnswer.length; j++)
+                if (answerBoard.ends[i][j]) {
+                    let region = getRegion(regions, {
+                        "x": i,
+                        "y": j
+                    });
+                    if (!region.isLine
+                        || !answerBoard.ends[region.ends[0].x][region.ends[0].y]
+                        || !answerBoard.ends[region.ends[1].x][region.ends[1].y]) {
+                        isCorrect = false;
+                        break outerFor;
+                    }
                 }
-            }
         }
     }
     if (isCorrect) {
@@ -955,6 +959,12 @@ document.getElementById("checkButton").addEventListener("pointerdown", function 
     }
 });
 function hasOShape(board) {
+    for (let i = 0; i < board.length - 1; i++)
+        for (let j = 0; j < board.length - 1; j++) {
+            if (board[i][j] == board[i + 1][j] && board[i][j] == board[i][j + 1] && board[i][j] == board[i + 1][j + 1]) {
+                return true;
+            }
+        }
     return false;
 }
 function* generateRand() {
