@@ -107,45 +107,9 @@ function generateAnswer(size, isTodaysPuzzle) {
     pathCoords.push(structuredClone(coord));
     let color = Math.round(randFunc());
     board[coord.x][coord.y] = color;
-    for (let i = 0; i < length; i++) {
-        let dirAvailable = [];
-        for (let j of DIRECTIONS) {
-            if (coord.x + j.x < 0 || coord.x + j.x >= size || coord.y + j.y >= size || coord.y + j.y < 0)
-                continue;
-            if (checkGridAvailability(board, {
-                "x": coord.x + j.x,
-                "y": coord.y + j.y
-            }, pathCoords))
-                dirAvailable.push(j);
-        }
-        if (dirAvailable.length) {
-            let dir = dirAvailable[Math.floor(randFunc() * dirAvailable.length)];
-            coord.x = coord.x + dir.x;
-            coord.y = coord.y + dir.y;
-            pathCoords.push(structuredClone(coord));
-            board[coord.x][coord.y] = color;
-            let lastCoord = pathCoords[pathCoords.length - 2];
-            for (let j of DIRECTIONS) {
-                if (lastCoord.x + j.x < 0 || lastCoord.x + j.x >= size || lastCoord.y + j.y >= size || lastCoord.y + j.y < 0)
-                    continue;
-                if (board[lastCoord.x + j.x][lastCoord.y + j.y] != color)
-                    board[lastCoord.x + j.x][lastCoord.y + j.y] = Number(!color);
-                checkOShape(board);
-            }
-        }
-        else
-            break;
-    }
-    let lastCoord = pathCoords[pathCoords.length - 1];
-    for (let j of DIRECTIONS) {
-        if (lastCoord.x + j.x < 0 || lastCoord.x + j.x >= size || lastCoord.y + j.y >= size || lastCoord.y + j.y < 0)
-            continue;
-        if (board[lastCoord.x + j.x][lastCoord.y + j.y] != color)
-            board[lastCoord.x + j.x][lastCoord.y + j.y] = Number(!color);
-    }
-    checkOShape(board);
+    expandRegion(board, coord, length, isTodaysPuzzle);
     let regions = getRegions(board);
-    getRegion(regions, lastCoord).finished = true;
+    getRegion(regions, coord).finished = true;
     let hasUnfilledGrids = true;
     while (hasUnfilledGrids) {
         for (let i of regions) {

@@ -247,15 +247,19 @@ body {
     }
 }
 
-h2 {
+h1 {
     text-align: center;
     font-size: xx-large;
+}
+
+h2 {
+    font-size: x-large;
 }
 
 .option {
     border: solid 3px var(--border);
     box-shadow: 0 0 9vmin var(--shade);
-    background-color: none;
+    background-color: transparent;
     padding: 3vh;
     margin-bottom: 3vh;
     transition: 0.1s;
