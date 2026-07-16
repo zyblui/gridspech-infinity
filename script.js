@@ -685,33 +685,7 @@ function solve(ends, numbers) {
         "usedEnds": []
     });
     exploreFuturePaths(branches[branches.length - 1], ends, solutions);
-    console.log("solutions", structuredClone(solutions));
-    outerFor2: for (let solutionIndex = 0; solutionIndex < solutions.length; solutionIndex++) {
-        if (!solutions[solutionIndex])
-            break;
-        let regions = getRegions(solutions[solutionIndex].board);
-        for (let end of endsList) {
-            let region = getRegion(regions, end);
-            if (solutions[solutionIndex].board[end.x][end.y] != -1 && (!region.isLine
-                || (!(region.ends[0].x == end.x && region.ends[0].y == end.y)
-                    && !(region.ends[1].x == end.x && region.ends[1].y == end.y)))) {
-                solutions.splice(solutionIndex, 1);
-                solutionIndex--;
-                continue outerFor2;
-            }
-        }
-        for (let number of numberList) {
-            let counters = getNumber(solutions[solutionIndex].board, {
-                "x": number.x,
-                "y": number.y
-            });
-            if (counters.counterMin > number.number || counters.counterMax < number.number) {
-                solutions.splice(solutionIndex, 1);
-                solutionIndex--;
-                continue outerFor2;
-            }
-        }
-    }
+    removeInvalidSolutions(solutions, endsList);
     while (solutions[0].usedEnds.length < endsList.length) {
         branches = [];
         let tempSolutions = structuredClone(solutions);
@@ -722,6 +696,23 @@ function solve(ends, numbers) {
         "solutions": solutions,
         "branches": branches
     };
+}
+function removeInvalidSolutions(solutions, endsList) {
+    for (let solutionIndex = 0; solutionIndex < solutions.length; solutionIndex++) {
+        if (!solutions[solutionIndex])
+            break;
+        let regions = getRegions(solutions[solutionIndex].board);
+        for (let end of endsList) {
+            let region = getRegion(regions, end);
+            if (solutions[solutionIndex].board[end.x][end.y] != -1 && (!region.isLine
+                || (!(region.ends[0].x == end.x && region.ends[0].y == end.y)
+                    && !(region.ends[1].x == end.x && region.ends[1].y == end.y)))) {
+                solutions.splice(solutionIndex, 1);
+                solutionIndex--;
+                break;
+            }
+        }
+    }
 }
 function iterateSolution(tempSolutions, endsList, ends) {
     let solutions = [], branches = [];
@@ -751,21 +742,7 @@ function iterateSolution(tempSolutions, endsList, ends) {
             exploreFuturePaths(branches[branches.length - 1], ends, solutions);
         }
     }
-    for (let solutionIndex = 0; solutionIndex < solutions.length; solutionIndex++) {
-        if (!solutions[solutionIndex])
-            break;
-        let regions = getRegions(solutions[solutionIndex].board);
-        for (let end of endsList) {
-            let region = getRegion(regions, end);
-            if (solutions[solutionIndex].board[end.x][end.y] != -1 && (!region.isLine
-                || (!(region.ends[0].x == end.x && region.ends[0].y == end.y)
-                    && !(region.ends[1].x == end.x && region.ends[1].y == end.y)))) {
-                solutions.splice(solutionIndex, 1);
-                solutionIndex--;
-                break;
-            }
-        }
-    }
+    removeInvalidSolutions(solutions, endsList);
     return solutions;
 }
 function exploreFuturePaths({ "board": board, "branches": branches, "pathCoords": pathCoords, "usedEnds": usedEnds }, ends, solutions) {
