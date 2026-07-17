@@ -645,7 +645,6 @@ function removeInvalidSolutions(solutions: Solution[], endsList: Coord[]): void 
 }
 function iterateSolution(tempSolutions: Solution[], endsList: Coord[], ends: Board<boolean>): Solution[] {
     let solutions: Solution[] = [], branches: Branch[] = [];
-
     for (let tempSolution of tempSolutions) {
         let endIndex2: number = 0;
         outerFor: for (; ; endIndex2++) {
@@ -838,6 +837,19 @@ document.getElementById("checkButton")!.addEventListener("pointerdown", function
                     || !answerBoard.ends[region.ends[1].x][region.ends[1].y]) {
                     isCorrect = false;
                     break outerFor;
+                }
+            }
+        }
+        if (isCorrect) outerFor2: for (let i: number = 0; i < userAnswer.length; i++) {
+            for (let j: number = 0; j < userAnswer.length; j++) if (puzzle.numbers[i][j] != 0) {
+                let counter: number = 0;
+                for (let dir of DIRECTIONS) if (i + dir.x >= 0 && i + dir.x < userAnswer.length && j + dir.y >= 0 && j + dir.y < userAnswer
+                    .length && userAnswer[i + dir.x][j + dir.y] == 1) {
+                    counter++;
+                }
+                if (counter != puzzle.numbers[i][j]) {
+                    isCorrect = false;
+                    break outerFor2;
                 }
             }
         }

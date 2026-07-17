@@ -895,6 +895,22 @@ document.getElementById("checkButton").addEventListener("pointerdown", function 
                     }
                 }
         }
+        if (isCorrect)
+            outerFor2: for (let i = 0; i < userAnswer.length; i++) {
+                for (let j = 0; j < userAnswer.length; j++)
+                    if (puzzle.numbers[i][j] != 0) {
+                        let counter = 0;
+                        for (let dir of DIRECTIONS)
+                            if (i + dir.x >= 0 && i + dir.x < userAnswer.length && j + dir.y >= 0 && j + dir.y < userAnswer
+                                .length && userAnswer[i + dir.x][j + dir.y] == 1) {
+                                counter++;
+                            }
+                        if (counter != puzzle.numbers[i][j]) {
+                            isCorrect = false;
+                            break outerFor2;
+                        }
+                    }
+            }
     }
     if (isCorrect) {
         document.getElementById("checkButton").classList.remove("show");
