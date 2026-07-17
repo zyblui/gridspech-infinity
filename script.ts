@@ -172,7 +172,6 @@ function generateAnswer(size: number, isTodaysPuzzle: boolean): Answer {
                 return b.ends.length * b.grids.length - a.ends.length * a.grids.length;
             });
             regions = regions.slice(0, size - 2);
-
             for (let j of regions) if (j.isLine && j.grids.length > 1) {
                 ends[j.ends[0].x][j.ends[0].y] = true;
                 ends[j.ends[1].x][j.ends[1].y] = true;
@@ -274,26 +273,27 @@ function getRegions(board: Board<number>): Region[] {
     }
     for (let i: number = 0; i < board.length; i++) for (let j: number = 0; j < board.length; j++) {
         if (board[i][j] == -1) continue;
-        for (let dir of DIRECTIONS) {
-            if (i + dir.x >= 0 && i + dir.x < board.length && j + dir.y >= 0 && j + dir.y < board.length && board[i + dir.x][j + dir.y] ==
-                board[i][j]) {
-                let region1Index: number = 0, region2Index: number = 0;
-                for (; region1Index < regions.length; region1Index++) {
-                    if (gridIndexOf(regions[region1Index].grids, {
-                        "x": i,
-                        "y": j
-                    }) != -1) break;
-                }
-                for (; region2Index < regions.length; region2Index++) {
-                    if (gridIndexOf(regions[region2Index].grids, {
-                        "x": i + dir.x,
-                        "y": j + dir.y
-                    }) != -1) break;
-                }
-                if (region1Index != region2Index) {
-                    merge(regions, region1Index, region2Index);
-                }
+        for (let dir of [{
+            "x": 1,
+            "y": 0
+        }, {
+            "x": 0,
+            "y": 1
+        }]) if (i + dir.x < board.length && j + dir.y < board.length && board[i + dir.x][j + dir.y] == board[i][j]) {
+            let region1Index: number = 0, region2Index: number = 0;
+            for (; region1Index < regions.length; region1Index++) {
+                if (gridIndexOf(regions[region1Index].grids, {
+                    "x": i,
+                    "y": j
+                }) != -1) break;
             }
+            for (; region2Index < regions.length; region2Index++) {
+                if (gridIndexOf(regions[region2Index].grids, {
+                    "x": i + dir.x,
+                    "y": j + dir.y
+                }) != -1) break;
+            }
+            merge(regions, region1Index, region2Index);
         }
     }
     return regions;
@@ -370,7 +370,6 @@ function renderBoard(board: Board<number>, ends: Board<boolean>, numbers: Board<
         if (given[i][j] != -1) grid.classList.add("given");
         document.getElementById("board")!.appendChild(grid);
     }
-
     document.getElementById("board")!.dataset.size = board.length.toString();
     document.getElementById("board")!.style.gridTemplateColumns = `repeat(${board.length}, 1fr)`;
     document.getElementById("board")!.style.gridTemplateRows = `repeat(${board.length}, 1fr)`;
@@ -439,7 +438,6 @@ function generatePuzzle(answer: Board<number>, ends: Board<boolean>, mode: strin
     let puzzleNumber: Board<number> = generateBoard(answer.length, 0);
     let given: Board<number> = generateBoard(answer.length, -1);
     let solutions: Solution[] = solve(ends, puzzleNumber).solutions;
-
     let tempSolutions: Board<number>[] = [];
     let hasMatch: boolean = false;
     for (let solution of solutions) {
@@ -779,7 +777,6 @@ function newGame(mode: string, size: number, isTodaysPuzzle: boolean): void {
 for (let i of document.querySelectorAll(".new-game") as NodeListOf<HTMLDivElement>) {
     i.addEventListener("pointerdown", function (): void {
         newGame(i.dataset.mode as string, Number(i.dataset.size), Boolean(Number(i.dataset.isTodaysPuzzle)));
-
         addEventsForGrids();
     });
 }

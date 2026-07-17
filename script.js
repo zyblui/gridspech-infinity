@@ -267,9 +267,14 @@ function getRegions(board) {
         for (let j = 0; j < board.length; j++) {
             if (board[i][j] == -1)
                 continue;
-            for (let dir of DIRECTIONS) {
-                if (i + dir.x >= 0 && i + dir.x < board.length && j + dir.y >= 0 && j + dir.y < board.length && board[i + dir.x][j + dir.y] ==
-                    board[i][j]) {
+            for (let dir of [{
+                    "x": 1,
+                    "y": 0
+                }, {
+                    "x": 0,
+                    "y": 1
+                }])
+                if (i + dir.x < board.length && j + dir.y < board.length && board[i + dir.x][j + dir.y] == board[i][j]) {
                     let region1Index = 0, region2Index = 0;
                     for (; region1Index < regions.length; region1Index++) {
                         if (gridIndexOf(regions[region1Index].grids, {
@@ -285,11 +290,8 @@ function getRegions(board) {
                         }) != -1)
                             break;
                     }
-                    if (region1Index != region2Index) {
-                        merge(regions, region1Index, region2Index);
-                    }
+                    merge(regions, region1Index, region2Index);
                 }
-            }
         }
     return regions;
 }
