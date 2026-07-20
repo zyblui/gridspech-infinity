@@ -306,9 +306,7 @@ function merge(regions: Region[], region1Index: number, region2Index: number): v
         regions[region1Index].isLine = false;
         regions[region1Index].ends = [];
     } else {
-        if (regions[region1Index].ends[0].x == regions[region1Index].ends[1].x && regions[region1Index].ends[0].y == regions[region1Index]
-            .ends[1].y && regions[region2Index].ends[0].x == regions[region2Index].ends[1].x && regions[region2Index].ends[0].y ==
-            regions[region2Index].ends[1].y
+        if (regions[region1Index].grids.length == 1 && regions[region2Index].grids.length == 1
             && Math.abs(regions[region1Index].ends[0].x - regions[region2Index].ends[0].x) + Math.abs(regions[region1Index].ends[0].y -
                 regions[region2Index].ends[0].y) == 1) {
             regions[region1Index].isLine = true;
@@ -670,13 +668,12 @@ function iterateSolution(tempSolutions: Solution[], endsList: Coord[], ends: Boa
     removeInvalidSolutions(solutions, endsList);
     return solutions;
 }
-
 function exploreFuturePaths({
     "board": board,
     "branches": branches,
     "pathCoords": pathCoords,
     "usedEnds": usedEnds
-}: Branch, ends: Board<boolean>, solutions: Solution[]) {
+}: Branch, ends: Board<boolean>, solutions: Solution[]): void {
     let coord: Coord = {
         "x": pathCoords[pathCoords.length - 1].x,
         "y": pathCoords[pathCoords.length - 1].y

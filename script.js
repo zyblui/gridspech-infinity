@@ -304,9 +304,7 @@ function merge(regions, region1Index, region2Index) {
         regions[region1Index].ends = [];
     }
     else {
-        if (regions[region1Index].ends[0].x == regions[region1Index].ends[1].x && regions[region1Index].ends[0].y == regions[region1Index]
-            .ends[1].y && regions[region2Index].ends[0].x == regions[region2Index].ends[1].x && regions[region2Index].ends[0].y ==
-            regions[region2Index].ends[1].y
+        if (regions[region1Index].grids.length == 1 && regions[region2Index].grids.length == 1
             && Math.abs(regions[region1Index].ends[0].x - regions[region2Index].ends[0].x) + Math.abs(regions[region1Index].ends[0].y -
                 regions[region2Index].ends[0].y) == 1) {
             regions[region1Index].isLine = true;
