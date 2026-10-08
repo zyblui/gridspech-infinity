@@ -14,6 +14,7 @@ interface Branch {
     "branches": Branch[],//never[]
     "pathCoords": Coord[],
     "usedEnds": Coord[];//never[]
+    //"regions": Region[];
 }
 interface Solution {
     "board": Board<number>,
@@ -114,6 +115,9 @@ const NUMBERS: number[] = [
 
 const DATE: Date = new Date();
 let boardSize: number = 4;
+
+let time: { [key: string]: number; } = {};
+
 function generateBoard(size: number, value: any): Board<typeof value> {
     let arr: (typeof value)[][] = [], tempArr: (typeof value)[] = [];
     for (let i: number = 0; i < size; i++) tempArr.push(value);
@@ -125,10 +129,10 @@ function checkGridAvailability(board: Board<number>, coord: Coord, pathCoords: A
     for (let i of pathCoords) if (i.x == coord.x && i.y == coord.y) return false;
     let tempBoard: Board<number> = structuredClone(board);
     tempBoard[coord.x][coord.y] = tempBoard[pathCoords[0].x][pathCoords[0].y];
+    checkOShape(tempBoard);
     let regions: Region[] = getRegions(tempBoard);
-    return getRegion(regions, pathCoords[0])!.isLine;
+    return getRegionFromRegions(regions, pathCoords[0])!.isLine;
 }
-
 function generateAnswer(size: number, isTodaysPuzzle: boolean): Answer {
     let randFunc: Function;
     if (isTodaysPuzzle) randFunc = rand;
@@ -146,7 +150,7 @@ function generateAnswer(size: number, isTodaysPuzzle: boolean): Answer {
     board[coord.x][coord.y] = color;
     expandRegion(board, coord, length, isTodaysPuzzle);
     let regions: Region[] = getRegions(board);
-    getRegion(regions, coord)!.finished = true;
+    getRegionFromRegions(regions, coord)!.finished = true;
     let hasUnfilledGrids: boolean = true;
     while (hasUnfilledGrids) {
         for (let i of regions) {
@@ -160,7 +164,7 @@ function generateAnswer(size: number, isTodaysPuzzle: boolean): Answer {
         }
         let regions2: Region[] = getRegions(board);
         for (let i of regions) {
-            if (i.finished) getRegion(regions2, i.grids[0])!.finished = true;
+            if (i.finished) getRegionFromRegions(regions2, i.grids[0])!.finished = true;
         }
         regions = structuredClone(regions2);
         hasUnfilledGrids = false;
@@ -190,26 +194,26 @@ function reverse(arr: any[]): any[] {
     return arr;
 }
 function expandRegion(board: Board<number>, startCoord: Coord, length: number, isTodaysPuzzle: boolean): void {
-    if (!getRegion(getRegions(board), startCoord)!.isLine) return;
+    if (!getRegionFromRegions(getRegions(board), startCoord)!.isLine) return;
     let randFunc: Function;
     if (isTodaysPuzzle) randFunc = rand;
     else randFunc = Math.random;
     let pathCoords: Coord[] = [];
     let coord: Coord = structuredClone(startCoord);
     let regions: Region[] = getRegions(board);
-    pathCoords = getRegion(regions, startCoord)!.grids;
+    pathCoords = getRegionFromRegions(regions, startCoord)!.grids;
     if (pathCoords[pathCoords.length - 1].x != startCoord.x || pathCoords[pathCoords.length - 1].y != startCoord.y) pathCoords = reverse(pathCoords);
     let color: number = board[startCoord.x][startCoord.y];
     for (let i of pathCoords) {
-        if ((i.x == getRegion(regions, startCoord)!.ends[0].x && i.y == getRegion(regions, startCoord)!.ends[0].y) || (i.x ==
-            getRegion(regions, startCoord)!.ends[1].x && i.y == getRegion(regions, startCoord)!.ends[1].y)) continue;
+        if ((i.x == getRegionFromRegions(regions, startCoord)!.ends[0].x && i.y == getRegionFromRegions(regions, startCoord)!.ends[0].y) || (i.x ==
+            getRegionFromRegions(regions, startCoord)!.ends[1].x && i.y == getRegionFromRegions(regions, startCoord)!.ends[1].y)) continue;
         for (let j of DIRECTIONS) {
             if (i.x + j.x < 0 || i.x + j.x >= board.length || i.y + j.y >= board.length || i.y + j.y < 0) continue;
             if (board[i.x + j.x][i.y + j.y] != color) board[i.x + j.x][i.y + j.y] = Number(!color);
         }
         checkOShape(board);
     }
-    if (!getRegion(getRegions(board), startCoord)!.isLine) return;
+    if (!getRegionFromRegions(getRegions(board), startCoord)!.isLine) return;
     board[coord.x][coord.y] = color;
     for (let i: number = 0; i < length; i++) {
         let dirAvailable: Coord[] = [];
@@ -239,7 +243,7 @@ function expandRegion(board: Board<number>, startCoord: Coord, length: number, i
         if (lastCoord.x + j.x < 0 || lastCoord.x + j.x >= board.length || lastCoord.y + j.y >= board.length || lastCoord.y + j.y < 0) continue;
         if (board[lastCoord.x + j.x][lastCoord.y + j.y] != color) board[lastCoord.x + j.x][lastCoord.y + j.y] = Number(!color);
     }
-    if (!getRegion(getRegions(board), startCoord)!.isLine) return;
+    if (!getRegionFromRegions(getRegions(board), startCoord)!.isLine) return;
     checkOShape(board);
 }
 function checkOShape(board: Board<number>): void {
@@ -280,25 +284,27 @@ function getRegions(board: Board<number>): Region[] {
             "x": 0,
             "y": 1
         }]) if (i + dir.x < board.length && j + dir.y < board.length && board[i + dir.x][j + dir.y] == board[i][j]) {
-            let region1Index: number = 0, region2Index: number = 0;
-            for (; region1Index < regions.length; region1Index++) {
-                if (gridIndexOf(regions[region1Index].grids, {
-                    "x": i,
-                    "y": j
-                }) != -1) break;
-            }
-            for (; region2Index < regions.length; region2Index++) {
-                if (gridIndexOf(regions[region2Index].grids, {
-                    "x": i + dir.x,
-                    "y": j + dir.y
-                }) != -1) break;
-            }
+            let region1Index = regionIndexOf(regions, {
+                "x": i,
+                "y": j
+            }), region2Index = regionIndexOf(regions, {
+                "x": i + dir.x,
+                "y": j + dir.y
+            });
             merge(regions, region1Index, region2Index);
         }
     }
     return regions;
 }
+function getRegionFromGrid() {
 
+}
+function regionIndexOf(regions: Region[], coord: Coord): number {
+    for (let regionIndex = 0; regionIndex < regions.length; regionIndex++) {
+        if (gridIndexOf(regions[regionIndex].grids, coord) != -1) return regionIndex;
+    }
+    return -1;
+}
 function merge(regions: Region[], region1Index: number, region2Index: number): void {
     if (region1Index == region2Index) return;
     let combinedIsLine: boolean = false;
@@ -349,7 +355,7 @@ function gridIndexOf(coordGroup: Array<Coord>, coord: Coord): number {
     for (let i: number = 0; i < coordGroup.length; i++) if (coordGroup[i].x == coord.x && coordGroup[i].y == coord.y) return i;
     return -1;
 }
-function getRegion(regions: Region[], coord: Coord): Region | void {
+function getRegionFromRegions(regions: Region[], coord: Coord): Region | void {
     for (let region of regions) for (let grid of region.grids) if (grid.x == coord.x && grid.y == coord.y) return region;
 }
 let stylesheet: CSSStyleSheet = new CSSStyleSheet();
@@ -386,7 +392,6 @@ function renderBoard(board: Board<number>, ends: Board<boolean>, numbers: Board<
         }`
     );
 }
-
 let downButton: number = -1, paintColor: number = -1;
 document.body.addEventListener("pointerup", function (): void {
     downButton = -1;
@@ -435,7 +440,7 @@ function paint(element: HTMLDivElement, isMouseDown: boolean): void {
 function generatePuzzle(answer: Board<number>, ends: Board<boolean>, mode: string): Puzzle {
     let puzzleNumber: Board<number> = generateBoard(answer.length, 0);
     let given: Board<number> = generateBoard(answer.length, -1);
-    let solutions: Solution[] = solve(ends, puzzleNumber).solutions;
+    let solutions: Solution[] = solve(ends);
     let tempSolutions: Board<number>[] = [];
     let hasMatch: boolean = false;
     for (let solution of solutions) {
@@ -506,7 +511,7 @@ function generatePuzzle(answer: Board<number>, ends: Board<boolean>, mode: strin
             let minHits: number = Math.min(...hits);
             if (minHits == tempSolutions.length) {
                 while (tempSolutions.length > 1) {
-                    addGiven(tempSolutions, answer, sameToAnswer, given);
+                    addGiven(tempSolutions, answer, /*sameToAnswer,*/ given);
                 }
                 break;
             }
@@ -531,9 +536,9 @@ function generatePuzzle(answer: Board<number>, ends: Board<boolean>, mode: strin
             }
         }
     } else {
-        let sameToAnswer: Board<number> = generateBoard(answer.length, 0);
+        //let sameToAnswer: Board<number> = generateBoard(answer.length, 0);
         while (tempSolutions.length > 1) {
-            addGiven(tempSolutions, answer, sameToAnswer, given);
+            addGiven(tempSolutions, answer, /*sameToAnswer,*/ given);
         }
     }
     console.log(structuredClone(tempSolutions));
@@ -542,7 +547,8 @@ function generatePuzzle(answer: Board<number>, ends: Board<boolean>, mode: strin
         "numbers": puzzleNumber
     };
 }
-function addGiven(tempSolutions: Board<number>[], answer: Board<number>, sameToAnswer: Board<number>, given: Board<number>): void {
+function addGiven(tempSolutions: Board<number>[], answer: Board<number>, /*sameToAnswer: Board<number>, */given: Board<number>): void {
+    let sameToAnswer: Board<number> = generateBoard(answer.length, 0);
     for (let solution of tempSolutions) {
         for (let i: number = 0; i < solution.length; i++) for (let j: number = 0; j < solution.length; j++) {
             if (solution[i][j] == -1 || solution[i][j] == answer[i][j]) sameToAnswer[i][j]++;
@@ -580,55 +586,29 @@ function getNumber(board: Board<number>, coord: Coord): {
         "counterMax": counterMax
     };
 }
-function solve(ends: Board<boolean>, numbers: Board<number>): {
-    "solutions": Solution[],
-    "branches": Branch[];
-} {
-    let numberList: {
-        "x": number,
-        "y": number,
-        "number": number;
-    }[] = [];
-    for (let i: number = 0; i < numbers.length; i++) for (let j: number = 0; j < numbers.length; j++) {
-        if (numbers[i][j] != 0) numberList.push({
-            "x": i,
-            "y": j,
-            "number": numbers[i][j]
-        });
-    }
-    let endsList: Coord[] = [], branches: Branch[] = [], solutions: Solution[] = [];
+function solve(ends: Board<boolean>): Solution[] {
+    let solutions: Solution[] = [{
+        "board": generateBoard(ends.length, -1),
+        "usedEnds": []
+    }];
+    let endsList: Coord[] = [];
     for (let i: number = 0; i < ends.length; i++) for (let j: number = 0; j < ends.length; j++) if (ends[i][j]) endsList.push({
         "x": i,
         "y": j
     });
-    let endIndex2: number = 0;
-    let board: Board<number> = generateBoard(ends.length, -1);
-    board[endsList[endIndex2].x][endsList[endIndex2].y] = 1;
-    branches.push({
-        "board": board,
-        "branches": [],
-        "pathCoords": [endsList[endIndex2]],
-        "usedEnds": []
-    });
-    exploreFuturePaths(branches[branches.length - 1], ends, solutions);
-    removeInvalidSolutions(solutions, endsList);
     while (solutions[0].usedEnds.length < endsList.length) {
-        branches = [];
         let tempSolutions: Solution[] = structuredClone(solutions);
         solutions = [];
         solutions = iterateSolution(tempSolutions, endsList, ends);
     }
-    return {
-        "solutions": solutions,
-        "branches": branches
-    };
+    return solutions;
 }
 function removeInvalidSolutions(solutions: Solution[], endsList: Coord[]): void {
     for (let solutionIndex: number = 0; solutionIndex < solutions.length; solutionIndex++) {
         if (!solutions[solutionIndex]) break;
         let regions: Region[] = getRegions(solutions[solutionIndex].board);
         for (let end of endsList) {
-            let region: Region = getRegion(regions, end) as Region;
+            let region: Region = getRegionFromRegions(regions, end) as Region;
             if (solutions[solutionIndex].board[end.x][end.y] != -1 && (!region.isLine
                 || (
                     !(region.ends[0].x == end.x && region.ends[0].y == end.y)
@@ -651,7 +631,8 @@ function iterateSolution(tempSolutions: Solution[], endsList: Coord[], ends: Boa
         }
         let board: Board<number> = tempSolution.board;
         let colorList: number[] = [];
-        if (board[endsList[endIndex2].x][endsList[endIndex2].y] != -1) colorList = [board[endsList[endIndex2].x][endsList[endIndex2].y]];
+        if (!tempSolutions[0].usedEnds.length) colorList = [1];
+        else if (board[endsList[endIndex2].x][endsList[endIndex2].y] != -1) colorList = [board[endsList[endIndex2].x][endsList[endIndex2].y]];
         else colorList = [0, 1];
         for (let color of colorList) {
             let tempBoard: Board<number> = structuredClone(board);
@@ -709,7 +690,7 @@ function exploreFuturePaths({
             });
             let regions: Region[] = getRegions(tempBoard);
             for (let i: number = 0; i < ends.length; i++) for (let j: number = 0; j < ends.length; j++) if (ends[i][j]) {
-                let region: Region = getRegion(regions, {
+                let region: Region = getRegionFromRegions(regions, {
                     "x": i,
                     "y": j
                 }) as Region;
@@ -825,7 +806,7 @@ document.getElementById("checkButton")!.addEventListener("pointerdown", function
         let regions: Region[] = getRegions(userAnswer);
         outerFor: for (let i: number = 0; i < userAnswer.length; i++) {
             for (let j: number = 0; j < userAnswer.length; j++) if (answerBoard.ends[i][j]) {
-                let region: Region = getRegion(regions, {
+                let region: Region = getRegionFromRegions(regions, {
                     "x": i,
                     "y": j
                 }) as Region;
@@ -1109,6 +1090,27 @@ function loadTutorial(stepIndex: number): void {
     for (let j of TUTORIAL.steps[stepIndex].highlight) {
         document.querySelector(`[data-x="${j.x}"][data-y="${j.y}"]`)!.classList.add("highlight");
     }
+}
+function addGridToRegions(regions: Region[], board: Board<number>, coord: Coord): Region[] {
+    for (let dir of DIRECTIONS) {
+        if (coord.x + dir.x >= 0 && coord.x + dir.x < board.length && coord.y + dir.y >= 0 && coord.y + dir.y < board.length) {
+            if (board[coord.x][coord.y] == board[coord.x + dir.x][coord.y + dir.y]) {
+                let newRegions = structuredClone(regions);
+                newRegions.push({
+                    "grids": [coord],
+                    "isLine": true,
+                    "ends": [coord, coord],
+                    "finished": false
+                });
+                merge(newRegions, regionIndexOf(newRegions, {
+                    "x": coord.x + dir.x,
+                    "y": coord.y + dir.y
+                }), newRegions.length - 1);
+                return newRegions;
+            }
+        }
+    }
+    return regions;
 }
 document.getElementById("howToPlay")!.addEventListener("pointerdown", function (): void {
     startTutorial();
